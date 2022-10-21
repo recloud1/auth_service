@@ -1,4 +1,4 @@
-from typing import TypeVar, Optional, List
+from typing import List, Optional, TypeVar
 
 from pydantic import BaseModel, Field
 
@@ -52,3 +52,13 @@ class StatusResponse(BaseModel):
     status: str = 'ok'
     warning: Optional[str] = None
     warning_info: List[dict] = Field(default_factory=list)
+
+
+class GetMultiQueryParam(BaseModel):
+    rows_per_page: int = Field(25, ge=0, le=100)
+    page: int = Field(1, ge=1)
+    rows_number: Optional[int]
+    show_deleted: bool = False
+    sort_by: str = 'id'
+    descending: bool = False
+

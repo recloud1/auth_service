@@ -1,7 +1,6 @@
+from core.config import envs
 from gevent import monkey
 from gevent.pywsgi import WSGIServer
-
-from core.config import envs
 
 monkey.patch_all()
 

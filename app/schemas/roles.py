@@ -1,21 +1,28 @@
-from typing import List
+import datetime
+from typing import List, Optional
 
-from schemas.core import IdMixin, Model, ListModel
-
-
-class RoleCreate(Model):
-    pass
+from pydantic import Field
+from schemas.core import IdMixin, ListModel, Model
 
 
-class RoleUpdate(RoleCreate):
+class RolePermissionsCreate(Model):
+    permissions: List[str]
+
+
+class RoleUpdate(Model):
+    name: str = Field(..., max_length=256)
+    description: str = Field(None, max_length=512)
+
+
+class RoleCreate(RoleUpdate, RolePermissionsCreate):
     pass
 
 
 class RoleBare(RoleUpdate, IdMixin):
-    pass
+    deleted_at: Optional[datetime.datetime]
 
 
-class RoleFull(RoleBare):
+class RoleFull(RoleBare, RolePermissionsCreate):
     pass
 
 

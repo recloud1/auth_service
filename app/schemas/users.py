@@ -1,6 +1,6 @@
 from typing import List
 
-from schemas.core import IdMixin, Model, ListModel
+from schemas.core import IdMixin, ListModel, Model
 
 
 class UserCreate(Model):
@@ -12,7 +12,8 @@ class UserUpdate(UserCreate):
 
 
 class UserBare(UserUpdate, IdMixin):
-    pass
+    class Config(Model.Config):
+        orm_mode = True
 
 
 class UserFull(UserBare):
