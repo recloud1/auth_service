@@ -104,6 +104,18 @@ async = ["asgiref (>=3.2)"]
 dotenv = ["python-dotenv"]
 
 [[package]]
+name = "flask-pydantic"
+version = "0.11.0"
+description = "Flask extension for integration with Pydantic library"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+Flask = "*"
+pydantic = ">=1.7"
+
+[[package]]
 name = "gevent"
 version = "22.10.1"
 description = "Coroutine-based network library"
@@ -446,7 +458,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "4fbf288f234ad6765a9a642d5fd3fca15071137c14099a59225846e48280c27b"
+content-hash = "26470c0dc7b3bfcc7c3c2c56a1a7ba4ff8299f78e7079ed81cee64fd8340a0f4"
 
 [metadata.files]
 alembic = [
@@ -566,6 +578,10 @@ flasgger = [
 flask = [
     {file = "Flask-2.2.2-py3-none-any.whl", hash = "sha256:b9c46cc36662a7949f34b52d8ec7bb59c0d74ba08ba6cb9ce9adc1d8676d9526"},
     {file = "Flask-2.2.2.tar.gz", hash = "sha256:642c450d19c4ad482f96729bd2a8f6d32554aa1e231f4f6b4e7e5264b16cca2b"},
+]
+flask-pydantic = [
+    {file = "Flask-Pydantic-0.11.0.tar.gz", hash = "sha256:eef679b24e34ffb02e24e1d998ac023007aa2b531927fdc2f9b8114a12c19bb4"},
+    {file = "Flask_Pydantic-0.11.0-py3-none-any.whl", hash = "sha256:c5a6283d1227631683ceb72a41f652036829476fbb6e7b6ccef8cae8ed51ebab"},
 ]
 gevent = [
     {file = "gevent-22.10.1-cp27-cp27m-win32.whl", hash = "sha256:702a51b8f21bad1976b0893f90ade466e8c27039b846b611ad2beb8c6e6ac701"},
