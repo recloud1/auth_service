@@ -21,6 +21,9 @@ class RoleCreate(RoleUpdate, RolePermissionsCreate):
 class RoleBare(RoleUpdate, IdMixin):
     deleted_at: Optional[datetime.datetime]
 
+    class Config(Model.Config):
+        orm_mode = True
+
 
 class RoleFull(RoleBare, RolePermissionsCreate):
     pass

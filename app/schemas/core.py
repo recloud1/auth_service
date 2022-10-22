@@ -1,3 +1,4 @@
+import uuid
 from typing import List, Optional, TypeVar
 
 from pydantic import BaseModel, Field
@@ -22,7 +23,7 @@ class IdMixin(Model):
 
     Указывать первым справа, т.е. ``class YourModel(YourBaseModel, IdMixin)``
     """
-    id: str
+    id: uuid.UUID
 
 
 class ListModel(Model):

@@ -4,7 +4,10 @@ from schemas.core import IdMixin, ListModel, Model
 
 
 class UserCreate(Model):
-    pass
+    login: str
+    email: str
+    password: str
+    role_id: str
 
 
 class UserUpdate(UserCreate):

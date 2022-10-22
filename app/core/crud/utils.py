@@ -1,8 +1,8 @@
-from typing import Type, TypeVar, Collection, Dict, Optional, Tuple, List
+from typing import Type, TypeVar, Collection, Dict, Optional, Tuple, List, Iterable
 
 from sqlalchemy.orm import Query
 
-from core.exceptions import generate_entity_not_exists_exception
+from core.exceptions import generate_entity_not_exists_exception, ObjectNotExists
 from models import Base
 
 RetrieveType = TypeVar('RetrieveType')
@@ -36,7 +36,8 @@ def retrieve_object(
 
 
 def retrieve_batch(
-        query: Query, model: Type[RetrieveType],
+        query: Query,
+        model: Type[RetrieveType],
         ids: Collection[int | str]
 ) -> Dict[int | str, RetrieveType]:
     """
@@ -93,3 +94,24 @@ def pagination(
 
     final_query = query.offset((page - 1) * (rows_per_page or 0))
     return final_query.all(), rows_number
+
+
+def check_missing_entities(ids: Iterable[str], objects: List[Base], model: Base):
+    """
+    Проверка на наличие несуществующих записей бд между запрашиваемыми идентификаторами и данными из БД
+
+    :raises: ObjectNotExists при отсутствии 1 или более сущностей в БД
+    """
+    if len(set(ids)) != len(objects):
+        retrieving_ids = set(ids)
+        existing_ids = {i.id for i in objects}
+
+        diff = retrieving_ids.symmetric_difference(existing_ids)
+
+        repr_name = getattr(model, '__repr_name__', lambda: 'Object')
+
+        raise ObjectNotExists(
+            mess=f'{repr_name() if callable(repr_name) else repr_name}'
+                 f' с идентификаторами {", ".join(map(str, diff))} не найдены',
+            model=model, ids=list(diff)
+        )

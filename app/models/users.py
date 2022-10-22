@@ -11,7 +11,7 @@ class User(TimestampMixin, Base):
     __tablename__ = 'users'
     __table_args__ = {'schema': 'users'}
 
-    id: int = Column(UUID, primary_key=True, server_default=str(uuid.uuid4()))
+    id: str = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     role_id: str = Column(UUID, ForeignKey('roles.roles.id'), nullable=False)
 
     login = Column(String(128), nullable=True, unique=True)
@@ -31,7 +31,7 @@ class UserLoginHistory(Base):
     __tablename__ = 'user_login_histories'
     __table_args__ = {'schema': 'users'}
 
-    id: int = Column(UUID, primary_key=True, server_default=str(uuid.uuid4()))
+    id: str = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id: str = Column(UUID, ForeignKey('users.users.id', ondelete='CASCADE'), nullable=False, index=True)
     ip: str = Column(Text)
     fingerprint: dict = Column(JSONB)

@@ -102,7 +102,8 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         return data
 
     def create(
-            self, session: Session,
+            self,
+            session: Session,
             obj_in: CreateSchemaType,
             exclude_fields: Set[str] = None,
             cast_policy: ExcludePolicyEnum = ExcludePolicyEnum.default

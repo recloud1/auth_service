@@ -13,7 +13,7 @@ class Role(Base, TimestampMixin):
     __tablename__ = 'roles'
     __table_args__ = {'schema': 'roles'}
 
-    id: int = Column(UUID, primary_key=True, server_default=str(uuid.uuid4()))
+    id: int = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name: str = Column(String(256), nullable=False)
     description: str = Column(String(256), nullable=True)
 
@@ -25,7 +25,7 @@ class RolePermission(Base):
     __tablename__ = 'role_permissions'
     __table_args__ = {'schema': 'roles'}
 
-    id: int = Column(UUID, primary_key=True, server_default=str(uuid.uuid4()))
+    id: int = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     permission: str = Column(String(512), nullable=False, unique=True)
     role_id: int = Column(UUID, ForeignKey('roles.roles.id'), nullable=False, index=True)
 
