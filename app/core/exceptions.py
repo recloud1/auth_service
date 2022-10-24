@@ -3,6 +3,13 @@ from typing import Collection
 from models import Base
 
 
+class NotAuthorized(Exception):
+    """
+    Пользователь не авторизован в системе
+    """
+    pass
+
+
 class NoPermissionException(Exception):
     """
     У пользователя нет прав на выполнение запроса
@@ -49,6 +56,11 @@ class ObjectAlreadyExists(Exception):
 
     def __init__(self, message: str = 'Record already exists'):
         super().__init__(message)
+
+
+class LogicException(Exception):
+    def __init__(self, message='Ошибка логики', *args):
+        super().__init__(message, *args)
 
 
 def generate_entity_not_exists_exception(model, id) -> ObjectNotExists:

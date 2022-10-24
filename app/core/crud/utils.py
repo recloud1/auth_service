@@ -1,4 +1,5 @@
 from typing import Type, TypeVar, Collection, Dict, Optional, Tuple, List, Iterable
+from uuid import UUID
 
 from sqlalchemy.orm import Query
 
@@ -7,11 +8,13 @@ from models import Base
 
 RetrieveType = TypeVar('RetrieveType')
 
+ID = TypeVar('ID', int, UUID)
+
 
 def retrieve_object(
         query: Query,
         model: Type[RetrieveType],
-        id: int | str,
+        id: ID,
         raise_deleted: bool = False
 ) -> RetrieveType:
     """

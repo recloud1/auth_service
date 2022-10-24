@@ -1,3 +1,7 @@
-from flask_pydantic_spec import FlaskPydanticSpec
+from spectree import SpecTree, SecurityScheme
 
-api = FlaskPydanticSpec('flask')
+security_schemes = [
+    SecurityScheme(name='jwt', data={'type': 'apiKey', 'name': 'Authorization', 'in': 'header'})
+]
+
+api = SpecTree('flask', annotations=True, security_schemes=security_schemes)

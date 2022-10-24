@@ -1,12 +1,13 @@
 import uuid
 
 from flask import Blueprint, request
-from flask_pydantic_spec import Response
+from spectree import Response
 
 from core.exceptions import ObjectAlreadyExists
 from core.swagger import api
 from internal.roles import role_crud
 from models import Role
+from routes.core import responses
 from schemas.core import GetMultiQueryParam
 from schemas.roles import RoleList, RoleBare, RoleFull, RoleCreate, RoleUpdate
 from utils.db import db_session_manager
@@ -15,8 +16,8 @@ roles = Blueprint(name='roles', import_name=__name__, url_prefix='/roles')
 route_tags = ['Roles']
 
 
-@roles.route('', methods=['GET'])
-@api.validate(query=GetMultiQueryParam, resp=Response(HTTP_200=RoleList), tags=route_tags)
+@roles.get('')
+@api.validate(query=GetMultiQueryParam, resp=Response(HTTP_200=RoleList, **responses), tags=route_tags)
 def get_roles():
     """
     Получение списка ролей доступных в системе
@@ -29,20 +30,23 @@ def get_roles():
     return RoleList(data=result).dict()
 
 
-@roles.route('/<role_id>', methods=['GET'])
-@api.validate(resp=Response(HTTP_200=RoleFull), tags=route_tags)
+@roles.get('/<role_id>')
+@api.validate(resp=Response(HTTP_200=RoleFull, **responses), tags=route_tags)
 def get_role(role_id: str):
     """
-    Получение информации о конкретном пользователе
+    Получение информации о конкретном роли
     """
     with db_session_manager() as session:
         role = role_crud.get(session, role_id)
         return RoleFull.from_orm(role).dict()
 
 
-@roles.route('', methods=['POST'])
-@api.validate(body=RoleCreate, resp=Response(HTTP_200=RoleFull, HTTP_403=None), tags=route_tags)
+@roles.post('')
+@api.validate(json=RoleCreate, resp=Response(HTTP_200=RoleFull, **responses), tags=route_tags)
 def create_role():
+    """
+    Создание новой роли
+    """
     data = RoleCreate(**request.json)
 
     with db_session_manager() as session:
@@ -59,9 +63,12 @@ def create_role():
         return result.dict()
 
 
-@roles.route('/<role_id>', methods=['PUT'])
-@api.validate(body=RoleUpdate, resp=Response(HTTP_200=RoleFull, HTTP_403=None), tags=route_tags)
+@roles.put('/<role_id>')
+@api.validate(json=RoleUpdate, resp=Response(HTTP_200=RoleFull, **responses), tags=route_tags)
 def update_role(role_id: uuid.UUID):
+    """
+    Обновление информации о конкретной роли
+    """
     data = RoleUpdate(**request.json)
 
     with db_session_manager() as session:
