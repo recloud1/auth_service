@@ -12,7 +12,7 @@ class User(TimestampMixin, Base):
     __table_args__ = {'schema': 'users'}
 
     id: str = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    role_id: str = Column(UUID, ForeignKey('roles.roles.id'), nullable=False)
+    role_id: str = Column(UUID(as_uuid=True), ForeignKey('roles.roles.id'), nullable=False)
 
     login = Column(String(128), nullable=True, unique=True)
     email = Column(String(256), nullable=False, unique=True)
@@ -32,7 +32,12 @@ class UserLoginHistory(Base):
     __table_args__ = {'schema': 'users'}
 
     id: str = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id: str = Column(UUID, ForeignKey('users.users.id', ondelete='CASCADE'), nullable=False, index=True)
+    user_id: str = Column(
+        UUID(as_uuid=True),
+        ForeignKey('users.users.id', ondelete='CASCADE'),
+        nullable=False,
+        index=True
+    )
     ip: str = Column(Text)
     fingerprint: dict = Column(JSONB)
     created_at = Column(DateTime, default=fresh_timestamp())

@@ -13,9 +13,30 @@ class UserCreate(Model):
     password: str
     role_id: uuid.UUID
 
+    @validator('login')
+    def validate_login(cls, v: str):
+        if not v.isascii():
+            raise ValueError("Логин может состоять только из символов латиницы")
+        for letter in v:
+            if letter.isspace():
+                raise ValueError("В логине не должно быть пробелов")
+        return v
 
-class UserUpdate(UserCreate):
-    pass
+    @validator('password')
+    def hash_password(cls, val: str):
+        if val:
+            password_hash = generate_password_hash(val)
+            return password_hash
+
+    @validator('password', pre=True)
+    def cast_empty_password_to_none(cls, val: str):
+        return None if (val is None or len(val) == 0) else val
+
+
+class UserUpdate(Model):
+    login: str
+    email: str
+    role_id: uuid.UUID
 
 
 class UserBare(UserUpdate, IdMixin):
@@ -63,7 +84,3 @@ class LoginUserIn(Model):
     login: str = Field(..., description='Почта или логин пользователя')
     password: str
     fingerprint: Optional[dict]
-
-
-class LogoutUser(Model):
-    token: str

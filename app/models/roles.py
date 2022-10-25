@@ -27,9 +27,9 @@ class RolePermission(Base):
 
     id: int = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     permission: str = Column(String(512), nullable=False, unique=True)
-    role_id: int = Column(UUID, ForeignKey('roles.roles.id'), nullable=False, index=True)
+    role_id: int = Column(UUID(as_uuid=True), ForeignKey('roles.roles.id'), nullable=False, index=True)
 
-    created_by: str = Column(UUID)
+    created_by: str = Column(UUID(as_uuid=True), ForeignKey('users.users.id'), nullable=False)
 
     created_at: datetime.datetime = Column(DateTime, default=fresh_timestamp())
     updated_at: datetime.datetime = Column(DateTime, default=fresh_timestamp(), onupdate=fresh_timestamp())

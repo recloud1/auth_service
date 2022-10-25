@@ -8,7 +8,7 @@ from models import Base
 
 RetrieveType = TypeVar('RetrieveType')
 
-ID = TypeVar('ID', int, UUID)
+ID = TypeVar('ID', int, str, UUID)
 
 
 def retrieve_object(

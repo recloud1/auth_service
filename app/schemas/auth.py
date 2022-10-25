@@ -13,17 +13,10 @@ class UserInfo(Model):
     Данные используемые при аутентификации пользователя
     """
     id: uuid.UUID
-    role_id: uuid.UUID
-    updated_at: datetime.datetime
-
     login: str
 
-    # email: EmailStr
-    # last_name: str
-    # first_name: str
-    # middle_name: Optional[str]
-
-    # role: RoleUpdate
+    role_id: uuid.UUID
+    role_name: Optional[str]
 
     class Config:
         orm_mode = True
@@ -35,19 +28,12 @@ class UserInfoJWT(Model):
     """
     id: uuid.UUID = Field(..., alias='id')
     role_id: uuid.UUID
-    updated_at: datetime.datetime = Field(..., alias='upd')
-
-
-class UserInfoJWTUnix(UserInfoJWT):
-    updated_at: float | datetime.datetime = Field(..., alias='upd')
-
-    @validator('updated_at', pre=True)
-    def validate_updated_at(cls, value):
-        return timestamp_to_unix(value)
+    role_name: Optional[str]
 
 
 class LoginOut(Model):
     token: str = Field(..., description='JWT токен пользователя')
+    refresh_token: str = Field(..., description='Refresh-токен пользователя')
     user: UserInfo
 
 
@@ -77,17 +63,12 @@ class RefreshTokenInfoIn(BaseModel):
 
     Используется для добавления информации в токен
     """
-    user_id: int
+    user_id: uuid.UUID
     expired_at: float | datetime.datetime = Field(..., alias='exp')
-    last_user_update: float | datetime.datetime = Field(..., alias='upd')
     type: str = Field('refresh', const=True, alias='typ')
 
     @validator('expired_at', pre=True)
     def validate_expired_at(cls, value):
-        return timestamp_to_unix(value)
-
-    @validator('last_user_update', pre=True)
-    def validate_last_user_update(cls, value):
         return timestamp_to_unix(value)
 
 
@@ -97,9 +78,8 @@ class RefreshTokenInfoOut(BaseModel):
 
     Используется для получения информации из токена
     """
-    user_id: int
+    user_id: uuid.UUID
     expired_at: datetime.datetime
-    last_user_update: datetime.datetime
     type: str = Field('refresh', const=True, alias='typ')
 
 
@@ -111,7 +91,6 @@ class TokenInfo(BaseModel):
     user: 'UserInfoJWT'
     token_expired_at: float | datetime.datetime = Field(..., alias='exp')
     token_created_at: float | datetime.datetime = Field(..., alias='iat')
-    refresh_token: str
 
     @root_validator
     def set_sub(cls, values):
@@ -125,3 +104,7 @@ class TokenInfo(BaseModel):
     @validator('token_created_at', pre=True)
     def validate_token_created_at(cls, value):
         return timestamp_to_unix(value)
+
+
+class TokenIn(Model):
+    token: str = Field(..., description='Refresh-токен пользователя')
