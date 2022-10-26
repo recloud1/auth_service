@@ -1,15 +1,18 @@
+import datetime
 import uuid
 
 from flask import Blueprint, request
 from spectree import Response
 
-from core.exceptions import ObjectAlreadyExists
+from core.constants import ROLES
+from core.exceptions import ObjectAlreadyExists, LogicException
 from core.swagger import api
 from internal.roles import role_crud
-from models import Role
+from models import Role, User
 from routes.core import responses
 from schemas.core import GetMultiQueryParam
 from schemas.roles import RoleList, RoleBare, RoleFull, RoleCreate, RoleUpdate
+from utils.auth import role_required
 from utils.db import db_session_manager
 
 roles = Blueprint(name='roles', import_name=__name__, url_prefix='/roles')
@@ -18,6 +21,7 @@ route_tags = ['Roles']
 
 @roles.get('')
 @api.validate(query=GetMultiQueryParam, resp=Response(HTTP_200=RoleList, **responses), tags=route_tags)
+@role_required([ROLES.administrator.value])
 def get_roles():
     """
     Получение списка ролей доступных в системе
@@ -32,6 +36,7 @@ def get_roles():
 
 @roles.get('/<role_id>')
 @api.validate(resp=Response(HTTP_200=RoleFull, **responses), tags=route_tags)
+@role_required([ROLES.administrator.value])
 def get_role(role_id: str):
     """
     Получение информации о конкретном роли
@@ -43,6 +48,7 @@ def get_role(role_id: str):
 
 @roles.post('')
 @api.validate(json=RoleCreate, resp=Response(HTTP_200=RoleFull, **responses), tags=route_tags)
+@role_required([ROLES.administrator.value])
 def create_role():
     """
     Создание новой роли
@@ -65,6 +71,7 @@ def create_role():
 
 @roles.put('/<role_id>')
 @api.validate(json=RoleUpdate, resp=Response(HTTP_200=RoleFull, **responses), tags=route_tags)
+@role_required([ROLES.administrator.value])
 def update_role(role_id: uuid.UUID):
     """
     Обновление информации о конкретной роли
@@ -84,3 +91,25 @@ def update_role(role_id: uuid.UUID):
         result = RoleFull.from_orm(role)
 
     return result.dict()
+
+
+@roles.delete('/<role_id>')
+@role_required([ROLES.administrator.value])
+def delete_role(role_id: uuid.UUID):
+    """
+    Обновление информации о конкретной роли
+    """
+    with db_session_manager() as session:
+        role = role_crud.get(session, role_id)
+
+        is_role_used_query = session.query(User).where(User.role_id == role_id, User.deleted_at == None)
+        is_role_used = session.scalar(is_role_used_query)
+        if is_role_used:
+            raise LogicException('Данную роль невозможно удалить, так как она назначена на пользователя')
+
+        role.deleted_at = datetime.datetime.utcnow()
+
+        session.flush(role)
+        session.refresh(role)
+
+        return RoleFull.from_orm(role).dict()
