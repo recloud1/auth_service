@@ -36,7 +36,6 @@ class UserCreate(Model):
 class UserUpdate(Model):
     login: str
     email: str
-    role_id: uuid.UUID
 
 
 class UserBare(UserUpdate, IdMixin):
@@ -52,6 +51,10 @@ class UserList(ListModel):
     data: List[UserBare]
 
 
+class SetUserRole(Model):
+    role_id: uuid.UUID
+
+
 class RegisterUserIn(Model):
     login: str = Field(min_length=4)
     password: str = Field(min_length=6)
@@ -59,6 +62,7 @@ class RegisterUserIn(Model):
     last_name: str
     first_name: str
     middle_name: Optional[str]
+    role_id: Optional[uuid.UUID]
 
     @validator('login')
     def validate_login(cls, v: str):

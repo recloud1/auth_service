@@ -1,11 +1,12 @@
 import jwt
 from flask import Blueprint, request
+from flask_jwt_extended import jwt_required
 from pydantic import ValidationError
 from sqlalchemy import or_, func
 from sqlalchemy.orm import joinedload
 
 from core.constants import ROLES
-from core.crud.utils import retrieve_object
+from internal.crud.utils import retrieve_object
 from core.exceptions import NotAuthorized, NoPermissionException, LogicException
 from internal.users import check_credentials, user_crud
 from models import User, Role, UserLoginHistory
@@ -74,6 +75,7 @@ def login():
 
 
 @auth.post('/logout')
+@jwt_required
 def generate_refresh_token():
     """
     Блокировка токенов пользователя

@@ -9,7 +9,7 @@ import pydantic
 from sqlalchemy.orm import Session, Query
 from sqlalchemy.orm.strategy_options import loader_option
 
-from core.crud.utils import retrieve_object, pagination
+from internal.crud.utils import retrieve_object, pagination
 from models import Base
 
 ModelType: Base = TypeVar("ModelType")

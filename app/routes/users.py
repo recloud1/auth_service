@@ -1,16 +1,18 @@
+import datetime
 import uuid
 
 from flask import Blueprint, request
+from flask_jwt_extended import verify_jwt_in_request
 from spectree import Response
 
 from core.constants import ROLES
-from core.crud.utils import retrieve_object
 from core.swagger import api
-from internal.users import user_crud, user_login_history_crud, check_credentials
-from models import User, UserLoginHistory, Role
+from internal.crud.utils import retrieve_object
+from internal.users import user_crud, check_credentials, get_login_history
+from models import User, Role
 from routes.core import responses
-from schemas.login_history import UserLoginHistoryBare, UserLoginHistoryList
-from schemas.users import UserBare, UserFull, UserList, UserCreate
+from schemas.login_history import UserLoginHistoryList
+from schemas.users import UserBare, UserFull, UserList, UserCreate, UserUpdate, SetUserRole
 from utils.auth import role_required
 from utils.db import db_session_manager
 
@@ -33,6 +35,7 @@ def get_users():
 
 @users.get('/<user_id>')
 @api.validate(resp=Response(HTTP_200=UserFull, **responses), tags=route_tags)
+@role_required([ROLES.administrator.value])
 def get_user(user_id: str):
     """
     Получение информации о конкретном пользователе
@@ -44,23 +47,36 @@ def get_user(user_id: str):
 
 @users.route('/<user_id>/login-history', methods=['GET'])
 @api.validate(resp=Response(HTTP_200=UserLoginHistoryList, **responses), tags=route_tags)
-def get_user_login_history(user_id: uuid.UUID):
+@role_required([ROLES.administrator.value])
+def get_user_login_histories(user_id: uuid.UUID):
     """
     Получение истории посещений конкретного пользователя
     """
     with db_session_manager() as session:
-        retrieve_object(session.query(User), User, user_id)
+        history = get_login_history(session, user_id)
 
-        query = session.query(UserLoginHistory).where(UserLoginHistory.user_id == user_id)
-        login_history, count = user_login_history_crud.get_multi(session, query=query)
+    return UserLoginHistoryList(data=history).dict()
 
-        result = [UserLoginHistoryBare.from_orm(i) for i in login_history]
 
-    return UserLoginHistoryList(data=result).dict()
+@users.route('/login-history', methods=['GET'])
+@api.validate(resp=Response(HTTP_200=UserLoginHistoryList, **responses), tags=route_tags)
+@role_required([ROLES.user.value])
+def get_user_login_history():
+    """
+    Получение истории посещений автора запроса к этому роуту
+    """
+    header, data = verify_jwt_in_request()
+    user_id = data.get('sub')
+
+    with db_session_manager() as session:
+        history = get_login_history(session, user_id)
+
+    return UserLoginHistoryList(data=history).dict()
 
 
 @users.post('')
 # @api.validate(json=UserCreate, resp=Response(HTTP_200=UserFull, **responses), tags=route_tags)
+@role_required([ROLES.administrator.value])
 def create_user():
     """
     Создание нового пользователя
@@ -69,9 +85,6 @@ def create_user():
     with db_session_manager() as session:
         retrieve_object(session.query(Role), Role, data.role_id)
 
-        # if not able_to_grant_role(session, author.role_id, data.role_id):
-        #     raise NoPermissionException("Невозможно выдать роль с большим набором привилегий")
-
         check_credentials(session, data.login, data.email)
 
         result_user = user_crud.create(session, data)
@@ -79,3 +92,82 @@ def create_user():
         result = UserFull.from_orm(result_user)
 
         return result.dict()
+
+
+@users.put('')
+@role_required([ROLES.administrator.value])
+def update_user(user_id: uuid.UUID):
+    """
+    Обновление информации о пользователе
+    """
+    data = UserUpdate(**request.json)
+
+    with db_session_manager() as session:
+        check_credentials(session, data.login, data.email, exclue_user_id=user_id)
+        user = user_crud.get(session, user_id)
+
+        result_user = user_crud.update(session, user, data)
+
+        result = UserFull.from_orm(result_user)
+
+        return result.dict()
+
+
+@users.put('/info')
+@role_required([ROLES.user.value])
+def update_user_info():
+    """
+    Обновление информации пользователя о самом себе
+    """
+    data = UserUpdate(**request.json)
+
+    header, payload = verify_jwt_in_request()
+    user_id = payload.get('sub')
+
+    with db_session_manager() as session:
+        check_credentials(session, data.login, data.email, exclue_user_id=user_id)
+        user = user_crud.get(session, user_id)
+
+        result_user = user_crud.update(session, user, data)
+
+        result = UserFull.from_orm(result_user)
+
+        return result.dict()
+
+
+@users.put('/<user_id>/roles')
+@role_required([ROLES.administrator.value])
+def set_user_role(user_id: uuid.UUID):
+    """
+    Установка роли для пользователя
+    """
+    data = SetUserRole(**request.json)
+    with db_session_manager() as session:
+        role_query = session.query(Role).where(Role.id != ROLES.root.value)
+        retrieve_object(role_query, Role, data.role_id)
+
+        user = user_crud.get(session, user_id)
+        user.role_id = data.role_id
+
+        session.flush()
+        session.refresh(user)
+
+        return UserFull.from_orm(user).dict()
+
+
+@users.delete('/<user_id>')
+@role_required([ROLES.administrator.value])
+def block_user(user_id: uuid.UUID):
+    """
+    Блокировка пользователя
+    """
+    with db_session_manager() as session:
+        user_query = session.query(User).where(User.role_id != ROLES.root.value)
+
+        user = user_crud.get(session, user_id, query=user_query)
+        user.deleted_at = datetime.datetime.utcnow()
+
+        session.flush()
+        session.refresh(user)
+
+        return UserFull.from_orm(user).dict()
