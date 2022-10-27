@@ -43,6 +43,3 @@ class BlockedJWTStorage:
 
         """
         self.cache.clear()
-
-
-blocked_jwt_storage = None

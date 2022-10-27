@@ -6,6 +6,7 @@ from sqlalchemy import or_, func
 from sqlalchemy.orm import joinedload
 
 from core.constants import ROLES
+from internal.cache import blocked_jwt_storage
 from internal.crud.utils import retrieve_object
 from core.exceptions import NotAuthorized, NoPermissionException, LogicException
 from internal.users import check_credentials, user_crud
@@ -13,9 +14,8 @@ from models import User, Role, UserLoginHistory
 from schemas.auth import LoginOut, UserInfo, RefreshTokenInfoOut, TokenIn, ChangePassword
 from schemas.core import StatusResponse
 from schemas.users import RegisterUserIn, UserFull, LoginUserIn
-from services.blocked_jwt import blocked_jwt_storage
 from services.jwt_generator import JWTGenerator
-from utils.auth import verify_password
+from utils.auth import verify_password, get_token_from_headers
 from utils.db import db_session_manager
 
 auth = Blueprint(name='auth', import_name=__name__, url_prefix='/auth')
@@ -75,15 +75,15 @@ def login():
 
 
 @auth.post('/logout')
-@jwt_required
+@jwt_required()
 def logout():
     """
     Блокировка токенов пользователя
     """
     data = TokenIn(**request.json)
-    access_token = request.headers['Authorization'].split(' ')[-1]
+    access_token = get_token_from_headers(request.headers)
 
-    if not JWTGenerator.validate_jwt(data.token):
+    if not JWTGenerator.validate_jwt(access_token):
         raise NotAuthorized('Неверный токен авторизации')
 
     try:
@@ -123,7 +123,7 @@ def generate_access_token():
 
 
 @auth.post('/change-password')
-@jwt_required
+@jwt_required()
 def change_password():
     """
     Смена пароля пользователя

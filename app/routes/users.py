@@ -13,7 +13,7 @@ from models import User, Role
 from routes.core import responses
 from schemas.login_history import UserLoginHistoryList
 from schemas.users import UserBare, UserFull, UserList, UserCreate, UserUpdate, SetUserRole
-from utils.auth import role_required
+from utils.required import role_required
 from utils.db import db_session_manager
 
 users = Blueprint(name='users', import_name=__name__, url_prefix='/users')

@@ -12,7 +12,7 @@ from models import Role, User
 from routes.core import responses
 from schemas.core import GetMultiQueryParam
 from schemas.roles import RoleList, RoleBare, RoleFull, RoleCreate, RoleUpdate
-from utils.auth import role_required
+from utils.required import role_required
 from utils.db import db_session_manager
 
 roles = Blueprint(name='roles', import_name=__name__, url_prefix='/roles')
