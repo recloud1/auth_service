@@ -60,7 +60,6 @@ services:
       timeout: 10s
       retries: 3
 
-
   nginx:
     container_name: 'auth_service_nginx'
     build: ./nginx
@@ -68,7 +67,7 @@ services:
       - 80:80
     depends_on:
       web:
-        condition: service-healthy
+        condition: service_healthy
     networks:
       - auth_service
 

@@ -9,8 +9,13 @@ services:
   redis:
     ports:
       - ${REDIS_PORT}:6379
+    depends_on:
+      - postgres
 
   web:
     ports:
       - ${APP_PORT}:8000
+    depends_on:
+      - postgres
+
     entrypoint: ["python", "main.py"]
