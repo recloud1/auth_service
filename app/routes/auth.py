@@ -154,4 +154,7 @@ def validate_jwt_token():
     Необходимость данный схемы работы обусловлена следующим моментом: сервис, который получает токен, должен
     удостовериться, что этот токен (после того, как пользователь его получил) не был изменен.
     """
-    pass
+    data = TokenIn(**request.json)
+    user_info = JWTGenerator.validate_jwt(data.token)
+
+    return user_info.dict()
