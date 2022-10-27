@@ -2,16 +2,19 @@ import jwt
 from flask import Blueprint, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from pydantic import ValidationError
+from spectree import Response
 from sqlalchemy import or_, func
 from sqlalchemy.orm import joinedload
 
 from core.constants import ROLES
+from core.swagger import api
 from internal.cache import blocked_jwt_storage
 from internal.crud.utils import retrieve_object
 from core.exceptions import NotAuthorized, NoPermissionException, LogicException
 from internal.users import check_credentials, user_crud
 from models import User, Role, UserLoginHistory
-from schemas.auth import LoginOut, UserInfo, RefreshTokenInfoOut, TokenIn, ChangePassword
+from routes.core import responses
+from schemas.auth import LoginOut, UserInfo, RefreshTokenInfoOut, TokenIn, ChangePassword, UserInfoJWT
 from schemas.core import StatusResponse
 from schemas.users import RegisterUserIn, UserFull, LoginUserIn
 from services.jwt_generator import JWTGenerator
@@ -23,6 +26,7 @@ route_tags = ['Auth']
 
 
 @auth.post('/register')
+@api.validate(json=RegisterUserIn, resp=Response(HTTP_200=UserFull, **responses), tags=route_tags)
 def register():
     """
     Регистрация нового пользователя с ролью "Пользователь"
@@ -39,6 +43,7 @@ def register():
 
 
 @auth.post('/login')
+@api.validate(json=LoginUserIn, resp=Response(HTTP_200=LoginOut, **responses), tags=route_tags)
 def login():
     """
     Авторизует пользователя для получения JWT токена
@@ -75,6 +80,7 @@ def login():
 
 
 @auth.post('/logout')
+@api.validate(json=TokenIn, resp=Response(HTTP_200=StatusResponse, **responses), tags=route_tags)
 @jwt_required()
 def logout():
     """
@@ -96,6 +102,7 @@ def logout():
 
 
 @auth.post('/refresh-token')
+@api.validate(json=TokenIn, resp=Response(HTTP_200=LoginOut, **responses), tags=route_tags)
 def generate_access_token():
     """
     Получает новый jwt токен по refresh токену
@@ -123,6 +130,7 @@ def generate_access_token():
 
 
 @auth.post('/change-password')
+@api.validate(json=ChangePassword, resp=Response(HTTP_200=StatusResponse, **responses), tags=route_tags)
 @jwt_required()
 def change_password():
     """
@@ -142,6 +150,7 @@ def change_password():
 
 
 @auth.post('/validate-token')
+@api.validate(json=TokenIn, resp=Response(HTTP_200=UserInfoJWT, **responses), tags=route_tags)
 def validate_jwt_token():
     """
     Валидация JWT-токена, который прислал сервис (в рамках системы кинотеатра).

@@ -7,6 +7,7 @@ from flask_jwt_extended import JWTManager
 from core.config import envs
 from core.exceptions import ObjectNotExists, NoPermissionException, ObjectAlreadyExists, NotAuthorized, \
     LogicException
+from core.swagger import api
 from routes.auth import auth
 from routes.roles import roles
 from routes.users import users
@@ -62,5 +63,5 @@ def handle_error(e):
 
 
 if __name__ == '__main__':
-    # api.register(app)
+    api.register(app)
     app.run(host=envs.app.host, port=envs.app.port)

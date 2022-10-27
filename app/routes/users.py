@@ -11,6 +11,7 @@ from internal.crud.utils import retrieve_object
 from internal.users import user_crud, check_credentials, get_login_history
 from models import User, Role
 from routes.core import responses
+from schemas.core import GetMultiQueryParam
 from schemas.login_history import UserLoginHistoryList
 from schemas.users import UserBare, UserFull, UserList, UserCreate, UserUpdate, SetUserRole
 from utils.required import role_required
@@ -21,6 +22,7 @@ route_tags = ['Users']
 
 
 @users.get('')
+@api.validate(query=GetMultiQueryParam, resp=Response(HTTP_200=UserList, **responses), tags=route_tags)
 @role_required([ROLES.administrator.value])
 def get_users():
     """
@@ -45,8 +47,15 @@ def get_user(user_id: str):
         return UserFull.from_orm(user).dict()
 
 
+history_params = {
+    'query': GetMultiQueryParam,
+    'resp': Response(HTTP_200=UserLoginHistoryList, **responses),
+    'tags': route_tags,
+}
+
+
 @users.route('/<user_id>/login-history', methods=['GET'])
-@api.validate(resp=Response(HTTP_200=UserLoginHistoryList, **responses), tags=route_tags)
+@api.validate(**history_params)
 @role_required([ROLES.administrator.value])
 def get_user_login_histories(user_id: uuid.UUID):
     """
@@ -59,7 +68,7 @@ def get_user_login_histories(user_id: uuid.UUID):
 
 
 @users.route('/login-history', methods=['GET'])
-@api.validate(resp=Response(HTTP_200=UserLoginHistoryList, **responses), tags=route_tags)
+@api.validate(**history_params)
 @role_required([ROLES.user.value])
 def get_user_login_history():
     """
@@ -74,7 +83,7 @@ def get_user_login_history():
 
 
 @users.post('')
-# @api.validate(json=UserCreate, resp=Response(HTTP_200=UserFull, **responses), tags=route_tags)
+@api.validate(json=UserCreate, resp=Response(HTTP_200=UserFull, **responses), tags=route_tags)
 @role_required([ROLES.administrator.value])
 def create_user():
     """
@@ -94,6 +103,7 @@ def create_user():
 
 
 @users.put('')
+@api.validate(json=UserUpdate, resp=Response(HTTP_200=UserFull, **responses), tags=route_tags)
 @role_required([ROLES.administrator.value])
 def update_user(user_id: uuid.UUID):
     """
@@ -113,6 +123,7 @@ def update_user(user_id: uuid.UUID):
 
 
 @users.put('/info')
+@api.validate(json=UserUpdate, resp=Response(HTTP_200=UserFull, **responses), tags=route_tags)
 @role_required([ROLES.user.value])
 def update_user_info():
     """
@@ -133,6 +144,7 @@ def update_user_info():
 
 
 @users.put('/<user_id>/roles')
+@api.validate(json=SetUserRole, resp=Response(HTTP_200=UserFull, **responses), tags=route_tags)
 @role_required([ROLES.administrator.value])
 def set_user_role(user_id: uuid.UUID):
     """
@@ -153,6 +165,7 @@ def set_user_role(user_id: uuid.UUID):
 
 
 @users.delete('/<user_id>')
+@api.validate(resp=Response(HTTP_200=UserFull, **responses), tags=route_tags)
 @role_required([ROLES.administrator.value])
 def block_user(user_id: uuid.UUID):
     """

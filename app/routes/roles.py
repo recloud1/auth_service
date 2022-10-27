@@ -94,6 +94,7 @@ def update_role(role_id: uuid.UUID):
 
 
 @roles.delete('/<role_id>')
+@api.validate(resp=Response(HTTP_200=RoleFull, **responses), tags=route_tags)
 @role_required([ROLES.administrator.value])
 def delete_role(role_id: uuid.UUID):
     """
