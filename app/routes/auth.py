@@ -81,15 +81,14 @@ def logout():
     Блокировка токенов пользователя
     """
     data = TokenIn(**request.json)
+    access_token = request.headers['Authorization'].split(' ')[-1]
+
     if not JWTGenerator.validate_jwt(data.token):
         raise NotAuthorized('Неверный токен авторизации')
 
     try:
         blocked_jwt_storage.add(data.token)
-
-        # TODO: достать текущий токен и его тоже заблочить
-        # current_token = ''
-        # blocked_jwt_storage.add(token)
+        blocked_jwt_storage.add(access_token)
     except ValueError as e:
         raise LogicException(message=str(e))
 
