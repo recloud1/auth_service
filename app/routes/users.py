@@ -2,7 +2,7 @@ import datetime
 import uuid
 
 from flask import Blueprint, request
-from flask_jwt_extended import verify_jwt_in_request
+from flask_jwt_extended import get_jwt_identity
 from spectree import Response
 
 from core.constants import ROLES
@@ -65,8 +65,7 @@ def get_user_login_history():
     """
     Получение истории посещений автора запроса к этому роуту
     """
-    header, data = verify_jwt_in_request()
-    user_id = data.get('sub')
+    user_id = get_jwt_identity()
 
     with db_session_manager() as session:
         history = get_login_history(session, user_id)
@@ -120,9 +119,7 @@ def update_user_info():
     Обновление информации пользователя о самом себе
     """
     data = UserUpdate(**request.json)
-
-    header, payload = verify_jwt_in_request()
-    user_id = payload.get('sub')
+    user_id = get_jwt_identity()
 
     with db_session_manager() as session:
         check_credentials(session, data.login, data.email, exclue_user_id=user_id)

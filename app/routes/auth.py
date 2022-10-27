@@ -76,7 +76,7 @@ def login():
 
 @auth.post('/logout')
 @jwt_required
-def generate_refresh_token():
+def logout():
     """
     Блокировка токенов пользователя
     """
