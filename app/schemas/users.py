@@ -10,7 +10,7 @@ from utils.auth import generate_password_hash
 class UserCreate(Model):
     login: str
     email: str
-    password: str
+    password: str = Field(..., min_length=6)
     role_id: uuid.UUID
 
     @validator('login')

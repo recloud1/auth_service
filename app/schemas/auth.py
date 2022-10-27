@@ -6,6 +6,7 @@ from typing import Optional, Any
 from pydantic import Field, validator, BaseModel, root_validator
 
 from schemas.core import Model
+from utils.auth import generate_password_hash
 
 
 class UserInfo(Model):
@@ -35,6 +36,16 @@ class LoginOut(Model):
     token: str = Field(..., description='JWT токен пользователя')
     refresh_token: str = Field(..., description='Refresh-токен пользователя')
     user: UserInfo
+
+
+class ChangePassword(Model):
+    password: str = Field(..., min_length=6)
+
+    @validator('password')
+    def hash_password(cls, val: str):
+        if val:
+            password_hash = generate_password_hash(val)
+            return password_hash
 
 
 Token = str

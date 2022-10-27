@@ -1,6 +1,6 @@
 import jwt
 from flask import Blueprint, request
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from pydantic import ValidationError
 from sqlalchemy import or_, func
 from sqlalchemy.orm import joinedload
@@ -10,7 +10,7 @@ from internal.crud.utils import retrieve_object
 from core.exceptions import NotAuthorized, NoPermissionException, LogicException
 from internal.users import check_credentials, user_crud
 from models import User, Role, UserLoginHistory
-from schemas.auth import LoginOut, UserInfo, RefreshTokenInfoOut, TokenIn
+from schemas.auth import LoginOut, UserInfo, RefreshTokenInfoOut, TokenIn, ChangePassword
 from schemas.core import StatusResponse
 from schemas.users import RegisterUserIn, UserFull, LoginUserIn
 from services.blocked_jwt import blocked_jwt_storage
@@ -92,7 +92,7 @@ def logout():
     except ValueError as e:
         raise LogicException(message=str(e))
 
-    return StatusResponse()
+    return StatusResponse().dict()
 
 
 @auth.post('/refresh-token')
@@ -120,6 +120,25 @@ def generate_access_token():
     access, refresh = JWTGenerator.create_jwt(user_model, refresh_token=data.token)
 
     return LoginOut(token=access, refresh_token=refresh, user=user_model).dict()
+
+
+@auth.post('/change-password')
+@jwt_required
+def change_password():
+    """
+    Смена пароля пользователя
+    """
+    data = ChangePassword(**request.json)
+    current_user_id = get_jwt_identity()
+
+    with db_session_manager() as session:
+        user = user_crud.get(session, current_user_id)
+
+        user.password = data.password
+
+        session.flush()
+
+    return StatusResponse().dict()
 
 
 @auth.post('/validate-token')
