@@ -122,9 +122,9 @@ def generate_access_token():
 
     with db_session_manager() as session:
         user = retrieve_object(session.query(User), model=User, id=info.user_id)
+        user_model = UserInfo.from_orm(user)
 
-    user_model = UserInfo.from_orm(user)
-    access, refresh = JWTGenerator.create_jwt(user_model, refresh_token=data.token)
+    access, refresh = JWTGenerator.create_jwt(user_model)
 
     return LoginOut(token=access, refresh_token=refresh, user=user_model).dict()
 

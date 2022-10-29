@@ -16,10 +16,10 @@ class UserCreate(Model):
     @validator('login')
     def validate_login(cls, v: str):
         if not v.isascii():
-            raise ValueError("Логин может состоять только из символов латиницы")
+            raise ValueError('Логин может состоять только из символов латиницы')
         for letter in v:
             if letter.isspace():
-                raise ValueError("В логине не должно быть пробелов")
+                raise ValueError('В логине не должно быть пробелов')
         return v
 
     @validator('password')
@@ -67,10 +67,10 @@ class RegisterUserIn(Model):
     @validator('login')
     def validate_login(cls, v: str):
         if not v.isascii():
-            raise ValueError("Логин может состоять только из символов латиницы")
+            raise ValueError('Логин может состоять только из символов латиницы')
         for letter in v:
             if letter.isspace():
-                raise ValueError("В логине не должно быть пробелов")
+                raise ValueError('В логине не должно быть пробелов')
         return v
 
     @validator('password')
