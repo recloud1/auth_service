@@ -1,17 +1,23 @@
 from json import JSONEncoder
 from uuid import UUID
 
+import click
 from flask import Flask
 from flask_jwt_extended import JWTManager
 
 from core.config import envs
+from core.constants import ROLES
 from core.exceptions import ObjectNotExists, NoPermissionException, ObjectAlreadyExists, NotAuthorized, \
     LogicException
 from core.swagger import api
+from internal.users import user_crud
+from models import User
 from routes.auth import auth
 from routes.roles import roles
 from routes.users import users
 from schemas.core import ErrorSchema
+from schemas.users import UserCreate
+from utils.db import db_session_manager
 
 old_default = JSONEncoder.default
 
@@ -60,6 +66,26 @@ def handle_error(e):
 @app.errorhandler(NoPermissionException)
 def handle_error(e):
     return ErrorSchema(detail=str(e)).dict(), 403
+
+
+@click.command(name='create-superuser')
+@click.option('--login', prompt='Введите логин суперпользователя', help='Логин суперпользователя')
+@click.option('--password', prompt='Введите пароль суперпользователя', help='Пароль суперпользователя')
+def create_user(login: str, password: str):
+    superuser = UserCreate(
+        login=login,
+        email='superuser@notmail.com',
+        password=password,
+        role_id=ROLES.root.value
+    )
+
+    with db_session_manager() as session:
+        existing_user_query = session.query(User).where(User.login == login, User.role_id == ROLES.root.value)
+        existing_user: User = session.scalar(existing_user_query)
+        if existing_user:
+            print('Superuser with the same login already exists! Try pass the another login')
+        else:
+            user_crud.create(session, superuser)
 
 
 if __name__ == '__main__':
