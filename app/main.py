@@ -1,3 +1,4 @@
+from http import HTTPStatus
 from json import JSONEncoder
 from uuid import UUID
 
@@ -45,27 +46,27 @@ app.register_blueprint(roles)
 
 @app.errorhandler(LogicException)
 def handle_error(e):
-    return ErrorSchema(detail=str(e)).dict(), 400
+    return ErrorSchema(detail=str(e)).dict(), HTTPStatus.BAD_REQUEST
 
 
 @app.errorhandler(NotAuthorized)
 def handle_error(e):
-    return ErrorSchema(detail=str(e)).dict(), 401
+    return ErrorSchema(detail=str(e)).dict(), HTTPStatus.UNAUTHORIZED
 
 
 @app.errorhandler(ObjectAlreadyExists)
 def handle_error(e):
-    return ErrorSchema(detail=str(e)).dict(), 409
+    return ErrorSchema(detail=str(e)).dict(), HTTPStatus.CONFLICT
 
 
 @app.errorhandler(ObjectNotExists)
 def handle_error(e):
-    return ErrorSchema(detail=str(e)).dict(), 404
+    return ErrorSchema(detail=str(e)).dict(), HTTPStatus.NOT_FOUND
 
 
 @app.errorhandler(NoPermissionException)
 def handle_error(e):
-    return ErrorSchema(detail=str(e)).dict(), 403
+    return ErrorSchema(detail=str(e)).dict(), HTTPStatus.FORBIDDEN
 
 
 @click.command(name='create-superuser')
