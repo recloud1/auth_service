@@ -3,7 +3,7 @@
 здесь представлены удобные обёртки на получение, создание, обновление и удаление в рамках одной сущности
 """
 import enum
-from typing import TypeVar, Union, Generic, Type, List, Optional, Set, Dict, Any, Tuple
+from typing import TypeVar, Generic, Type, Any
 
 import pydantic
 from sqlalchemy.orm import Session, Query
@@ -15,7 +15,7 @@ from models import Base
 ModelType: Base = TypeVar("ModelType")
 CreateSchemaType = TypeVar("CreateSchemaType", bound=pydantic.BaseModel)
 UpdateSchemaType = TypeVar("UpdateSchemaType", bound=pydantic.BaseModel)
-Id = Union[str, int]
+Id = str | int
 
 
 class ExcludePolicyEnum(enum.Enum):
@@ -28,8 +28,8 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     def __init__(
             self,
             model: Type[ModelType],
-            get_options: List[loader_option] = None,
-            get_multi_options: List[loader_option] = None,
+            get_options: list[loader_option] = None,
+            get_multi_options: list[loader_option] = None,
     ):
         """
         CRUD обёртка со стандартными методами
@@ -43,7 +43,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         self.get_options = get_options if get_options else []
         self.model = model
 
-    def get(self, session: Session, id: Id, query: Optional[Query] = None) -> Optional[ModelType]:
+    def get(self, session: Session, id: Id, query: Query | None = None) -> ModelType | None:
         """
         Получение единичного объекта из базы данных
         :param session: сессия бд
@@ -61,9 +61,12 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         return db_object
 
     def get_multi(
-            self, session: Session, offset: int = 0, limit: Optional[int] = None,
-            query: Optional[Query] = None
-    ) -> List[ModelType]:
+            self,
+            session: Session,
+            offset: int = 0,
+            limit: int | None = None,
+            query: Query | None = None
+    ) -> list[ModelType]:
         """
         Получение списка объектов установленного типа
         :param session: сессия бд
@@ -88,8 +91,8 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     # noinspection PyMethodMayBeStatic
     def _get_input_data(
             self,
-            obj_in: Union[CreateSchemaType, UpdateSchemaType],
-            exclude_fields: Set[str] = None,
+            obj_in: CreateSchemaType | UpdateSchemaType,
+            exclude_fields: set[str] = None,
             cast_policy: ExcludePolicyEnum = ExcludePolicyEnum.default
     ) -> dict:
         if exclude_fields is None:
@@ -105,7 +108,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             self,
             session: Session,
             obj_in: CreateSchemaType,
-            exclude_fields: Set[str] = None,
+            exclude_fields: set[str] = None,
             cast_policy: ExcludePolicyEnum = ExcludePolicyEnum.default
     ) -> ModelType:
         """
@@ -129,8 +132,8 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             self,
             session: Session,
             db_obj: ModelType,
-            obj_in: Union[UpdateSchemaType, Dict[str, Any]],
-            exclude_fields: Set[str] = None,
+            obj_in: UpdateSchemaType | dict[str, Any],
+            exclude_fields: set[str] = None,
             cast_policy: ExcludePolicyEnum = ExcludePolicyEnum.exclude_unset
     ) -> ModelType:
         """
@@ -181,8 +184,8 @@ class CRUDPaginated(CRUDBase):
             rows_per_page: int = 100,
             with_count: bool = True,
             with_deleted: bool = False,
-            query: Optional[Query] = None
-    ) -> Tuple[List[ModelType], Optional[int]]:
+            query: Query | None = None
+    ) -> tuple[list[ModelType], int | None]:
         """
         Получение списка объектов установленного типа c пагинацией
         :param session: сессия бд

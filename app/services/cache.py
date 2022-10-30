@@ -1,5 +1,3 @@
-from typing import Optional
-
 from redis.client import Redis
 
 
@@ -7,7 +5,7 @@ class RedisCache:
     def __init__(self, client: Redis):
         self.client = client
 
-    def add(self, key: str, value: str, ttl: Optional[int]):
+    def add(self, key: str, value: str, ttl: int | None):
         """
         Добавляет токен в заблокированные.
 

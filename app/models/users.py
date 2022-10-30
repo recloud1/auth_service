@@ -23,7 +23,7 @@ class User(TimestampMixin, Base):
     middle_name: str = Column(Text, nullable=True)
 
     role: 'Role' = relationship('Role', uselist=False)
-    # allowed_devices: List['UserAllowedDevice'] = relationship('UserAllowedDevice', uselist=True)
+    # allowed_devices: list['UserAllowedDevice'] = relationship('UserAllowedDevice', uselist=True)
 
 
 class UserLoginHistory(Base):

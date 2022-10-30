@@ -1,6 +1,5 @@
 import datetime
 import logging
-from typing import Optional, Tuple
 
 import jwt
 from pydantic import ValidationError
@@ -32,7 +31,7 @@ class JWTGenerator:
         return jwt.decode(token, cls.JWT_SECRET, algorithms=[cls.DEFAULT_ALGORITHM])
 
     @classmethod
-    def create_jwt(cls, user: UserInfo, refresh_token: Optional[str] = None) -> Tuple[Token, Token]:
+    def create_jwt(cls, user: UserInfo, refresh_token: str | None = None) -> tuple[Token, Token]:
         """
         Создаёт jwt токены из данных пользователя
 
@@ -56,7 +55,7 @@ class JWTGenerator:
         return token, refresh_token
 
     @classmethod
-    def parse_jwt(cls, token: Token) -> Optional[TokenInfo]:
+    def parse_jwt(cls, token: Token) -> TokenInfo | None:
         """
         Получает информацию из jwt токена
         """

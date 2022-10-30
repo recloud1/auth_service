@@ -1,10 +1,9 @@
-from typing import List, Optional
 from uuid import UUID
 
+from core.exceptions import ObjectAlreadyExists
 from sqlalchemy import or_
 from sqlalchemy.orm import joinedload, Session
 
-from core.exceptions import ObjectAlreadyExists
 from internal.crud.base import CRUDPaginated
 from internal.crud.utils import retrieve_object
 from models import User, UserLoginHistory
@@ -16,7 +15,7 @@ user_crud = CRUDPaginated(model=User, get_options=[joinedload(User.role)])
 user_login_history_crud = CRUDPaginated(model=UserLoginHistory)
 
 
-def check_credentials(session: Session, login: str, email: str, exclude_user_id: Optional[UUID] = None):
+def check_credentials(session: Session, login: str, email: str, exclude_user_id: UUID | None = None):
     """
     Проверка данных для регистрации или создания нового пользователя
 
@@ -39,7 +38,7 @@ def get_login_history(
         session: Session,
         user_id: UUID,
         query_params: GetMultiQueryParam
-) -> List[UserLoginHistoryBare]:
+) -> list[UserLoginHistoryBare]:
     """
     Получение истории посещений пользователя
 

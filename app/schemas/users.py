@@ -1,5 +1,4 @@
 import uuid
-from typing import List, Optional
 
 from pydantic import Field, EmailStr, validator
 
@@ -48,7 +47,7 @@ class UserFull(UserBare):
 
 
 class UserList(ListModel):
-    data: List[UserBare]
+    data: list[UserBare]
 
 
 class SetUserRole(Model):
@@ -61,8 +60,8 @@ class RegisterUserIn(Model):
     email: EmailStr
     last_name: str
     first_name: str
-    middle_name: Optional[str]
-    role_id: Optional[uuid.UUID]
+    middle_name: str | None
+    role_id: uuid.UUID | None
 
     @validator('login')
     def validate_login(cls, v: str):
@@ -87,4 +86,4 @@ class RegisterUserIn(Model):
 class LoginUserIn(Model):
     login: str = Field(..., description='Почта или логин пользователя')
     password: str
-    fingerprint: Optional[dict]
+    fingerprint: dict | None

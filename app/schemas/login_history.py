@@ -1,5 +1,3 @@
-from typing import List
-
 from schemas.core import Model, IdMixin, ListModel
 
 
@@ -13,4 +11,4 @@ class UserLoginHistoryBare(UserLoginHistoryCreate, IdMixin):
 
 
 class UserLoginHistoryList(ListModel):
-    data: List[UserLoginHistoryBare]
+    data: list[UserLoginHistoryBare]

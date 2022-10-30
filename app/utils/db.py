@@ -1,11 +1,12 @@
 import contextlib
 from contextvars import ContextVar
-from typing import Callable, ContextManager, Generator, Tuple
+from typing import Callable, ContextManager, Generator
 
-from core.config import envs
 from sqlalchemy import create_engine
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
+
+from core.config import envs
 
 session_context: ContextVar[Session] = ContextVar('session_context')
 
@@ -13,7 +14,7 @@ session_context: ContextVar[Session] = ContextVar('session_context')
 def session_factory(
         connection_string,
         **engine_params
-) -> Tuple[Generator[Session, None, None], Callable[[], ContextManager[Session]], Engine]:
+) -> tuple[Generator[Session, None, None], Callable[[], ContextManager[Session]], Engine]:
     """
     Функция для создания фабрики соединений с бд
 

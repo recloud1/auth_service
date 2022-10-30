@@ -1,5 +1,5 @@
 import uuid
-from typing import List, Optional, TypeVar
+from typing import TypeVar
 
 from pydantic import BaseModel, Field
 
@@ -30,11 +30,11 @@ class ListModel(Model):
     """
     Формат выдачи для всех списков объектов (multiple get)
     """
-    rows_per_page: Optional[int]
-    page: Optional[int]
-    rows_number: Optional[int]
+    rows_per_page: int | None
+    page: int | None
+    rows_number: int | None
     show_deleted: bool = False
-    data: List[ListElement]
+    data: list[ListElement]
     sort_by: str = 'id'
     descending: bool = False
 
@@ -51,14 +51,14 @@ class StatusResponse(BaseModel):
     Формат ответа для запросов, в которых не требуется отдавать данные
     """
     status: str = 'ok'
-    warning: Optional[str] = None
-    warning_info: List[dict] = Field(default_factory=list)
+    warning: str | None = None
+    warning_info: list[dict] = Field(default_factory=list)
 
 
 class GetMultiQueryParam(BaseModel):
     rows_per_page: int = Field(25, ge=0, le=100)
     page: int = Field(1, ge=1)
-    rows_number: Optional[int]
+    rows_number: int | None
     show_deleted: bool = False
     sort_by: str = 'id'
     descending: bool = False

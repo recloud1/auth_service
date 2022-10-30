@@ -2,13 +2,12 @@ import os
 import pathlib
 import sys
 from logging.config import fileConfig
-from typing import List
 
 import mako.template
 from alembic import context, util
 from alembic.operations.ops import MigrationScript
 from alembic.runtime.migration import MigrationContext
-from alembic.script import ScriptDirectory, write_hooks
+from alembic.script import ScriptDirectory
 from sqlalchemy import engine_from_config, pool
 
 # this is the Alembic Config object, which provides
@@ -104,7 +103,7 @@ def get_version_path(script: ScriptDirectory, revid: str, message: str) -> str:
 
 
 # noinspection PyProtectedMember
-def data_migration(context: MigrationContext, revision, directives: List[MigrationScript]):
+def data_migration(context: MigrationContext, revision, directives: list[MigrationScript]):
     """
     Generate data migration script from template if `data_migration` flag is specified.
 

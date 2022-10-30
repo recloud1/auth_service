@@ -1,12 +1,12 @@
 import datetime
-from typing import List, Optional
 
 from pydantic import Field
+
 from schemas.core import IdMixin, ListModel, Model
 
 
 class RolePermissionsCreate(Model):
-    permissions: List[str]
+    permissions: list[str]
 
 
 class RoleUpdate(Model):
@@ -19,7 +19,7 @@ class RoleCreate(RoleUpdate, RolePermissionsCreate):
 
 
 class RoleBare(RoleUpdate, IdMixin):
-    deleted_at: Optional[datetime.datetime]
+    deleted_at: datetime.datetime | None
 
     class Config(Model.Config):
         orm_mode = True
@@ -30,4 +30,4 @@ class RoleFull(RoleBare, RolePermissionsCreate):
 
 
 class RoleList(ListModel):
-    data: List[RoleBare]
+    data: list[RoleBare]

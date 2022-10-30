@@ -1,4 +1,3 @@
-from typing import Optional
 from urllib import parse
 
 from pydantic import BaseSettings, SecretStr
@@ -22,7 +21,7 @@ class Application(Settings):
 
 
 class Token(Settings):
-    test: Optional[str]
+    test: str | None
     alive_hours: int = 4
     refresh_alive_hours: int = 24 * 7
     secret: str = 'some_secret_word'
@@ -36,7 +35,7 @@ class Redis(Settings):
     port: int = 6379
     pool_minsize: int = 10
     pool_maxsize: int = 20
-    password: Optional[str] = None
+    password: str | None = None
 
     class Config(Settings.Config):
         env_prefix = 'REDIS_'

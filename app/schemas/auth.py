@@ -1,7 +1,7 @@
 import calendar
 import datetime
 import uuid
-from typing import Optional, Any
+from typing import Any
 
 from pydantic import Field, validator, BaseModel, root_validator
 
@@ -17,7 +17,7 @@ class UserInfo(Model):
     login: str
 
     role_id: uuid.UUID
-    role_name: Optional[str]
+    role_name: str | None
 
     class Config:
         orm_mode = True
@@ -29,7 +29,7 @@ class UserInfoJWT(Model):
     """
     id: uuid.UUID = Field(..., alias='id')
     role_id: uuid.UUID
-    role_name: Optional[str]
+    role_name: str | None
 
 
 class LoginOut(Model):
@@ -98,7 +98,7 @@ class TokenInfo(BaseModel):
     """
     Дополнительная информация содержащаяся в JWT токене
     """
-    sub: Optional[uuid.UUID]
+    sub: uuid.UUID | None
     user: 'UserInfoJWT'
     token_expired_at: float | datetime.datetime = Field(..., alias='exp')
     token_created_at: float | datetime.datetime = Field(..., alias='iat')

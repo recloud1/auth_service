@@ -1,11 +1,11 @@
 import datetime
 import uuid
-from typing import List
 
-from models.core import Base, TimestampMixin, fresh_timestamp
 from sqlalchemy import Column, DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
+
+from models.core import Base, TimestampMixin, fresh_timestamp
 
 
 class Role(Base, TimestampMixin):
@@ -17,7 +17,7 @@ class Role(Base, TimestampMixin):
     name: str = Column(String(256), nullable=False)
     description: str = Column(String(256), nullable=True)
 
-    permissions: List['RolePermission'] = relationship('RolePermission')
+    permissions: list['RolePermission'] = relationship('RolePermission')
 
 
 class RolePermission(Base):

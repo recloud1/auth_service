@@ -1,5 +1,5 @@
 from functools import wraps
-from typing import List, Any
+from typing import Any
 
 from flask import current_app, request
 from flask_jwt_extended import verify_jwt_in_request
@@ -13,7 +13,7 @@ from utils.auth import get_token_from_headers
 
 
 def role_required(
-        roles: List[str],
+        roles: list[str],
         optional: bool = False,
         fresh: bool = False,
         refresh: bool = False,

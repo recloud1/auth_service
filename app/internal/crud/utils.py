@@ -1,9 +1,9 @@
-from typing import Type, TypeVar, Collection, Dict, Optional, Tuple, List, Iterable
+from typing import Type, TypeVar, Collection, Iterable
 from uuid import UUID
 
+from core.exceptions import generate_entity_not_exists_exception, ObjectNotExists
 from sqlalchemy.orm import Query
 
-from core.exceptions import generate_entity_not_exists_exception, ObjectNotExists
 from models import Base
 
 RetrieveType = TypeVar('RetrieveType')
@@ -42,7 +42,7 @@ def retrieve_batch(
         query: Query,
         model: Type[RetrieveType],
         ids: Collection[int | str]
-) -> Dict[int | str, RetrieveType]:
+) -> dict[int | str, RetrieveType]:
     """
     Запрашивает набор объектов по идентификатором из базы данных
 
@@ -66,12 +66,12 @@ Count = int
 def pagination(
         query: Query,
         page: int = 1,
-        rows_per_page: Optional[int] = 25,
+        rows_per_page: int | None = 25,
         ModelClass: Type[SearchType] = Base,
         with_count: bool = True,
         with_deleted: bool = False,
         hide_deleted: bool = False
-) -> Tuple[List[SearchType], Count]:
+) -> tuple[list[SearchType], Count]:
     """
     Выполняет запрос с пагинацией.
 
@@ -99,7 +99,7 @@ def pagination(
     return final_query.all(), rows_number
 
 
-def check_missing_entities(ids: Iterable[str], objects: List[Base], model: Base):
+def check_missing_entities(ids: Iterable[str], objects: list[Base], model: Base):
     """
     Проверка на наличие несуществующих записей бд между запрашиваемыми идентификаторами и данными из БД
 
