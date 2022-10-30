@@ -28,11 +28,21 @@ def get_users():
     """
     Получение списка пользователей доступных в системе
     """
+    query_params = GetMultiQueryParam(**request.values)
     with db_session_manager() as session:
-        users_result, count = user_crud.get_multi(session)
+        users_result, count = user_crud.get_multi(
+            session,
+            rows_per_page=query_params.rows_per_page,
+            page=query_params.page
+        )
         result = [UserBare.from_orm(i) for i in users_result]
 
-    return UserList(data=result).dict()
+    return UserList(
+        data=result,
+        page=query_params.page,
+        rows_per_page=query_params.rows_per_page,
+        rows_number=count
+    ).dict()
 
 
 @users.get('/<user_id>')
@@ -61,10 +71,15 @@ def get_user_login_histories(user_id: uuid.UUID):
     """
     Получение истории посещений конкретного пользователя
     """
+    query_params = GetMultiQueryParam(**request.values)
     with db_session_manager() as session:
-        history = get_login_history(session, user_id)
+        history = get_login_history(session, user_id, query_params)
 
-    return UserLoginHistoryList(data=history).dict()
+    return UserLoginHistoryList(
+        data=history,
+        page=query_params.page,
+        rows_per_page=query_params.rows_per_page
+    ).dict()
 
 
 @users.route('/login-history', methods=['GET'])
@@ -74,12 +89,17 @@ def get_user_login_history():
     """
     Получение истории посещений автора запроса к этому роуту
     """
+    query_params = GetMultiQueryParam(**request.values)
     user_id = get_jwt_identity()
 
     with db_session_manager() as session:
-        history = get_login_history(session, user_id)
+        history = get_login_history(session, user_id, query_params)
 
-    return UserLoginHistoryList(data=history).dict()
+    return UserLoginHistoryList(
+        data=history,
+        page=query_params.page,
+        rows_per_page=query_params.rows_per_page
+    ).dict()
 
 
 @users.post('')
@@ -112,7 +132,7 @@ def update_user(user_id: uuid.UUID):
     data = UserUpdate(**request.json)
 
     with db_session_manager() as session:
-        check_credentials(session, data.login, data.email, exclue_user_id=user_id)
+        check_credentials(session, data.login, data.email, exclude_user_id=user_id)
         user = user_crud.get(session, user_id)
 
         result_user = user_crud.update(session, user, data)
@@ -133,7 +153,7 @@ def update_user_info():
     user_id = get_jwt_identity()
 
     with db_session_manager() as session:
-        check_credentials(session, data.login, data.email, exclue_user_id=user_id)
+        check_credentials(session, data.login, data.email, exclude_user_id=user_id)
         user = user_crud.get(session, user_id)
 
         result_user = user_crud.update(session, user, data)

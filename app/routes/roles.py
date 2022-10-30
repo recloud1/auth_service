@@ -26,12 +26,16 @@ def get_roles():
     """
     Получение списка ролей доступных в системе
     """
-
+    query_params = GetMultiQueryParam(**request.values)
     with db_session_manager() as session:
-        roles_result, count = role_crud.get_multi(session)
+        roles_result, count = role_crud.get_multi(
+            session,
+            page=query_params.page,
+            rows_per_page=query_params.rows_per_page
+        )
         result = [RoleBare.from_orm(i) for i in roles_result]
 
-    return RoleList(data=result).dict()
+    return RoleList(data=result, page=query_params.page, rows_per_page=query_params.rows_per_page).dict()
 
 
 @roles.get('/<role_id>')
