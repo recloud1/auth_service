@@ -14,7 +14,6 @@ RUN pip install "poetry==$POETRY_VERSION"
 
 RUN apt-get update  \
     && apt-get install -y --no-install-recommends  \
-       netcat  \
        curl \
     && pip install --upgrade --no-cache-dir poetry==$POETRY_VERSION \
     && apt-get clean \
@@ -25,6 +24,6 @@ COPY ./pyproject.toml ./poetry.lock ./
 RUN poetry config virtualenvs.create false \
     && poetry install --no-dev --no-interaction --no-ansi
 
-COPY ./app .
+COPY . .
 
-CMD ["python", "/run.py"]
+CMD ["python", "app/run.py"]

@@ -636,6 +636,7 @@ optional = false
 python-versions = ">=3.7"
 
 [package.dependencies]
+python-dotenv = {version = ">=0.10.4", optional = true, markers = "extra == \"dotenv\""}
 typing-extensions = ">=4.1.0"
 
 [package.extras]
@@ -725,6 +726,17 @@ redis = "*"
 
 [package.extras]
 tests = ["mock", "pytest-cov", "pytest-xdist"]
+
+[[package]]
+name = "python-dotenv"
+version = "0.21.0"
+description = "Read key-value pairs from a .env file and set them as environment variables"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.extras]
+cli = ["click (>=5.0)"]
 
 [[package]]
 name = "pytz"
@@ -937,7 +949,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "a7fc3913c9ce6798b1b2c5dd303fb452b7fb5f432956ad4defc75e8007ed4242"
+content-hash = "6bda2e289901f7e5fdaca66b34a83e53e1c4a24ae6a7c1a5ccc8939eafcfe40d"
 
 [metadata.files]
 aiohttp = [
@@ -1686,6 +1698,10 @@ pytest-asyncio = [
 pytest-redis = [
     {file = "pytest-redis-2.4.0.tar.gz", hash = "sha256:8a07520abed3cd341e8da1793059aa5717b02e56c43e7c76435db682cede10aa"},
     {file = "pytest_redis-2.4.0-py3-none-any.whl", hash = "sha256:3cf00ad3f7241e38ce6f1bcb66af11b91956a889f1e216cfc026e81aa638a4e7"},
+]
+python-dotenv = [
+    {file = "python-dotenv-0.21.0.tar.gz", hash = "sha256:b77d08274639e3d34145dfa6c7008e66df0f04b7be7a75fd0d5292c191d79045"},
+    {file = "python_dotenv-0.21.0-py3-none-any.whl", hash = "sha256:1684eb44636dd462b66c3ee016599815514527ad99965de77f43e0944634a7e5"},
 ]
 pytz = [
     {file = "pytz-2022.5-py2.py3-none-any.whl", hash = "sha256:335ab46900b1465e714b4fda4963d87363264eb662aab5e65da039c25f1f5b22"},

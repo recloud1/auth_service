@@ -7,7 +7,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-pydantic = "^1.10.2"
+pydantic = {extras = ["dotenv"], version = "^1.10.2"}
 gevent = "^22.10.1"
 sqlalchemy = "^1.4.42"
 asyncpg = "^0.26.0"
