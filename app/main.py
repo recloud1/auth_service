@@ -91,4 +91,4 @@ def create_user(login: str, password: str):
 
 if __name__ == '__main__':
     api.register(app)
-    app.run(host=envs.app.host, port=envs.app.port)
+    app.run(host='0.0.0.0', port=envs.app.port)

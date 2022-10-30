@@ -5,12 +5,16 @@ services:
       - ${DB_DATA}:/var/lib/postgresql/data
     ports:
       - ${DB_PORT}:5432
+    networks:
+      - local_net
 
   redis:
     ports:
       - ${REDIS_PORT}:6379
     depends_on:
       - postgres
+    networks:
+      - local_net
 
   web:
     ports:
@@ -18,4 +22,11 @@ services:
     depends_on:
       - postgres
 
-    entrypoint: ["python", "main.py"]
+    entrypoint: ["python", "app/main.py"]
+    networks:
+      - local_net
+
+
+networks:
+  local_net:
+    driver: bridge
