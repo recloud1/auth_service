@@ -15,7 +15,7 @@ from schemas.roles import RoleList, RoleBare, RoleFull, RoleCreate, RoleUpdate
 from utils.required import role_required
 from utils.db import db_session_manager
 
-roles = Blueprint(name='roles', import_name=__name__, url_prefix='/roles')
+roles = Blueprint(name='roles', import_name=__name__, url_prefix='/v1/roles')
 route_tags = ['Roles']
 
 

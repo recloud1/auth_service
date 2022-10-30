@@ -13,9 +13,9 @@ from core.exceptions import ObjectNotExists, NoPermissionException, ObjectAlread
 from core.swagger import api
 from internal.users import user_crud
 from models import User
-from routes.auth import auth
-from routes.roles import roles
-from routes.users import users
+from routes.v1.auth import auth
+from routes.v1.roles import roles
+from routes.v1.users import users
 from schemas.core import ErrorSchema
 from schemas.users import UserCreate
 from utils.db import db_session_manager

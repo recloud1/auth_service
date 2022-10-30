@@ -17,7 +17,7 @@ from schemas.users import UserBare, UserFull, UserList, UserCreate, UserUpdate, 
 from utils.required import role_required
 from utils.db import db_session_manager
 
-users = Blueprint(name='users', import_name=__name__, url_prefix='/users')
+users = Blueprint(name='users', import_name=__name__, url_prefix='/v1/users')
 route_tags = ['Users']
 
 

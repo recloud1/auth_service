@@ -21,11 +21,11 @@ from services.jwt_generator import JWTGenerator
 from utils.auth import verify_password, get_token_from_headers
 from utils.db import db_session_manager
 
-auth = Blueprint(name='auth', import_name=__name__, url_prefix='/auth')
+auth = Blueprint(name='auth', import_name=__name__, url_prefix='/v1/auth')
 route_tags = ['Auth']
 
 
-@auth.post('/register')
+@auth.post('register')
 @api.validate(json=RegisterUserIn, resp=Response(HTTP_200=UserFull, **responses), tags=route_tags)
 def register():
     """
@@ -42,7 +42,7 @@ def register():
         return result.dict()
 
 
-@auth.post('/login')
+@auth.post('login')
 @api.validate(json=LoginUserIn, resp=Response(HTTP_200=LoginOut, **responses), tags=route_tags)
 def login():
     """
@@ -79,7 +79,7 @@ def login():
     return LoginOut(token=access, refresh_token=refresh, user=user_model).dict()
 
 
-@auth.post('/logout')
+@auth.post('logout')
 @api.validate(json=TokenIn, resp=Response(HTTP_200=StatusResponse, **responses), tags=route_tags)
 @jwt_required()
 def logout():
@@ -101,7 +101,7 @@ def logout():
     return StatusResponse().dict()
 
 
-@auth.post('/refresh-token')
+@auth.post('refresh-token')
 @api.validate(json=TokenIn, resp=Response(HTTP_200=LoginOut, **responses), tags=route_tags)
 def generate_access_token():
     """
@@ -129,7 +129,7 @@ def generate_access_token():
     return LoginOut(token=access, refresh_token=refresh, user=user_model).dict()
 
 
-@auth.post('/change-password')
+@auth.post('change-password')
 @api.validate(json=ChangePassword, resp=Response(HTTP_200=StatusResponse, **responses), tags=route_tags)
 @jwt_required()
 def change_password():
@@ -149,7 +149,7 @@ def change_password():
     return StatusResponse().dict()
 
 
-@auth.post('/validate-token')
+@auth.post('validate-token')
 @api.validate(json=TokenIn, resp=Response(HTTP_200=UserInfoJWT, **responses), tags=route_tags)
 def validate_jwt_token():
     """

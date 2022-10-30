@@ -7,6 +7,6 @@ class RequestMethods(str, enum.Enum):
 
 
 class ApiRoutes(str, enum.Enum):
-    auth = 'auth'
-    roles = 'roles'
-    users = 'users'
+    auth = 'v1/auth'
+    roles = 'v1/roles'
+    users = 'v1/users'
