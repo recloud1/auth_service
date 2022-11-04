@@ -1,5 +1,7 @@
 import uuid
 
+from sqlalchemy.ext.hybrid import hybrid_property
+
 from models import Base, Role, TimestampMixin, fresh_timestamp
 from sqlalchemy import Column, DateTime, ForeignKey, String, Text
 from sqlalchemy.dialects.postgresql import JSONB, UUID
@@ -24,6 +26,10 @@ class User(TimestampMixin, Base):
 
     role: 'Role' = relationship('Role', uselist=False)
     # allowed_devices: list['UserAllowedDevice'] = relationship('UserAllowedDevice', uselist=True)
+
+    @hybrid_property
+    def role_name(self) -> str:
+        return self.role.name
 
 
 class UserLoginHistory(Base):
