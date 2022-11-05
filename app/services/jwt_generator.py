@@ -6,7 +6,11 @@ from pydantic import ValidationError
 
 from core.config import envs
 from core.exceptions import NotAuthorized
+from core.logger import get_logger
 from schemas.auth import UserInfo, Token, RefreshTokenInfoIn, TokenInfo, UserInfoJWT
+from utils.trace import trace_request
+
+logger = get_logger(__name__)
 
 
 class JWTGenerator:
@@ -31,6 +35,7 @@ class JWTGenerator:
         return jwt.decode(token, cls.JWT_SECRET, algorithms=[cls.DEFAULT_ALGORITHM])
 
     @classmethod
+    @trace_request('create_jwt_token', logger)
     def create_jwt(cls, user: UserInfo, refresh_token: str | None = None) -> tuple[Token, Token]:
         """
         Создаёт jwt токены из данных пользователя
@@ -73,6 +78,7 @@ class JWTGenerator:
         return None
 
     @classmethod
+    @trace_request('validate_jwt_token', logger)
     def validate_jwt(cls, token: Token) -> UserInfoJWT:
         """
         Проверяет jwt токен на валидность и возвращает информацию о пользователе
