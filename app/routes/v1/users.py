@@ -22,25 +22,24 @@ route_tags = ['Users']
 
 
 @users.get('')
-@api.validate(query=GetMultiQueryParam, resp=Response(HTTP_200=UserList, **responses), tags=route_tags)
+@api.validate(resp=Response(HTTP_200=UserList, **responses), tags=route_tags)
 @role_required([ROLES.administrator.value])
-def get_users():
+def get_users(query: GetMultiQueryParam):
     """
     Получение списка пользователей доступных в системе
     """
-    query_params = GetMultiQueryParam(**request.values)
     with db_session_manager() as session:
         users_result, count = user_crud.get_multi(
             session,
-            rows_per_page=query_params.rows_per_page,
-            page=query_params.page
+            rows_per_page=query.rows_per_page,
+            page=query.page
         )
         result = [UserBare.from_orm(i) for i in users_result]
 
     return UserList(
         data=result,
-        page=query_params.page,
-        rows_per_page=query_params.rows_per_page,
+        page=query.page,
+        rows_per_page=query.rows_per_page,
         rows_number=count
     ).dict()
 
@@ -103,19 +102,18 @@ def get_user_login_history():
 
 
 @users.post('')
-@api.validate(json=UserCreate, resp=Response(HTTP_200=UserFull, **responses), tags=route_tags)
+@api.validate(resp=Response(HTTP_200=UserFull, **responses), tags=route_tags)
 @role_required([ROLES.administrator.value])
-def create_user():
+def create_user(json: UserCreate):
     """
     Создание нового пользователя
     """
-    data = UserCreate(**request.json)
     with db_session_manager() as session:
-        retrieve_object(session.query(Role), Role, data.role_id)
+        retrieve_object(session.query(Role), Role, json.role_id)
 
-        check_credentials(session, data.login, data.email)
+        check_credentials(session, json.login, json.email)
 
-        result_user = user_crud.create(session, data)
+        result_user = user_crud.create(session, json)
 
         result = UserFull.from_orm(result_user)
 
@@ -123,19 +121,17 @@ def create_user():
 
 
 @users.put('')
-@api.validate(json=UserUpdate, resp=Response(HTTP_200=UserFull, **responses), tags=route_tags)
+@api.validate(resp=Response(HTTP_200=UserFull, **responses), tags=route_tags)
 @role_required([ROLES.administrator.value])
-def update_user(user_id: uuid.UUID):
+def update_user(user_id: uuid.UUID, json: UserUpdate):
     """
     Обновление информации о пользователе
     """
-    data = UserUpdate(**request.json)
-
     with db_session_manager() as session:
-        check_credentials(session, data.login, data.email, exclude_user_id=user_id)
+        check_credentials(session, json.login, json.email, exclude_user_id=user_id)
         user = user_crud.get(session, user_id)
 
-        result_user = user_crud.update(session, user, data)
+        result_user = user_crud.update(session, user, json)
 
         result = UserFull.from_orm(result_user)
 
@@ -143,20 +139,19 @@ def update_user(user_id: uuid.UUID):
 
 
 @users.put('/info')
-@api.validate(json=UserUpdate, resp=Response(HTTP_200=UserFull, **responses), tags=route_tags)
+@api.validate(resp=Response(HTTP_200=UserFull, **responses), tags=route_tags)
 @role_required([ROLES.user.value])
-def update_user_info():
+def update_user_info(json: UserUpdate):
     """
     Обновление информации пользователя о самом себе
     """
-    data = UserUpdate(**request.json)
     user_id = get_jwt_identity()
 
     with db_session_manager() as session:
-        check_credentials(session, data.login, data.email, exclude_user_id=user_id)
+        check_credentials(session, json.login, json.email, exclude_user_id=user_id)
         user = user_crud.get(session, user_id)
 
-        result_user = user_crud.update(session, user, data)
+        result_user = user_crud.update(session, user, json)
 
         result = UserFull.from_orm(result_user)
 
@@ -164,19 +159,18 @@ def update_user_info():
 
 
 @users.put('/<user_id>/roles')
-@api.validate(json=SetUserRole, resp=Response(HTTP_200=UserFull, **responses), tags=route_tags)
+@api.validate(resp=Response(HTTP_200=UserFull, **responses), tags=route_tags)
 @role_required([ROLES.administrator.value])
-def set_user_role(user_id: uuid.UUID):
+def set_user_role(user_id: uuid.UUID, json: SetUserRole):
     """
     Установка роли для пользователя
     """
-    data = SetUserRole(**request.json)
     with db_session_manager() as session:
         role_query = session.query(Role).where(Role.id != ROLES.root.value)
-        retrieve_object(role_query, Role, data.role_id)
+        retrieve_object(role_query, Role, json.role_id)
 
         user = user_crud.get(session, user_id)
-        user.role_id = data.role_id
+        user.role_id = json.role_id
 
         session.flush()
         session.refresh(user)

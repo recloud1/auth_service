@@ -20,22 +20,22 @@ route_tags = ['Roles']
 
 
 @roles.get('')
-@api.validate(query=GetMultiQueryParam, resp=Response(HTTP_200=RoleList, **responses), tags=route_tags)
+@api.validate(resp=Response(HTTP_200=RoleList, **responses), tags=route_tags)
 @role_required([ROLES.administrator.value])
-def get_roles():
+def get_roles(query: GetMultiQueryParam):
     """
     Получение списка ролей доступных в системе
     """
-    query_params = GetMultiQueryParam(**request.values)
+    # query_params = GetMultiQueryParam(**request.values)
     with db_session_manager() as session:
         roles_result, count = role_crud.get_multi(
             session,
-            page=query_params.page,
-            rows_per_page=query_params.rows_per_page
+            page=query.page,
+            rows_per_page=query.rows_per_page
         )
         result = [RoleBare.from_orm(i) for i in roles_result]
 
-    return RoleList(data=result, page=query_params.page, rows_per_page=query_params.rows_per_page).dict()
+    return RoleList(data=result, page=query.page, rows_per_page=query.rows_per_page).dict()
 
 
 @roles.get('/<role_id>')
@@ -51,22 +51,20 @@ def get_role(role_id: str):
 
 
 @roles.post('')
-@api.validate(json=RoleCreate, resp=Response(HTTP_200=RoleFull, **responses), tags=route_tags)
+@api.validate(resp=Response(HTTP_200=RoleFull, **responses), tags=route_tags)
 @role_required([ROLES.administrator.value])
-def create_role():
+def create_role(json: RoleCreate):
     """
     Создание новой роли
     """
-    data = RoleCreate(**request.json)
-
     with db_session_manager() as session:
-        exists_query = session.query(Role).where(Role.name == data.name)
+        exists_query = session.query(Role).where(Role.name == json.name)
         exists = session.scalar(exists_query)
 
         if exists:
             raise ObjectAlreadyExists('Данная роль уже существует')
 
-        result_role = role_crud.create(session, data)
+        result_role = role_crud.create(session, json)
 
         result = RoleFull.from_orm(result_role)
 
@@ -76,21 +74,19 @@ def create_role():
 @roles.put('/<role_id>')
 @api.validate(json=RoleUpdate, resp=Response(HTTP_200=RoleFull, **responses), tags=route_tags)
 @role_required([ROLES.administrator.value])
-def update_role(role_id: uuid.UUID):
+def update_role(role_id: uuid.UUID, json: RoleUpdate):
     """
     Обновление информации о конкретной роли
     """
-    data = RoleUpdate(**request.json)
-
     with db_session_manager() as session:
-        exists_query = session.query(Role).where(Role.id != role_id, Role.name == data.name)
+        exists_query = session.query(Role).where(Role.id != role_id, Role.name == json.name)
         exists_role = session.scalar(exists_query)
 
         if exists_role:
             raise ObjectAlreadyExists(f'Роль с таким наименованием уже существует')
 
         role = role_crud.get(session, role_id)
-        role = role_crud.update(session, role, data)
+        role = role_crud.update(session, role, json)
 
         result = RoleFull.from_orm(role)
 

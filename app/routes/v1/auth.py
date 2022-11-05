@@ -26,41 +26,39 @@ route_tags = ['Auth']
 
 
 @auth.post('register')
-@api.validate(json=RegisterUserIn, resp=Response(HTTP_200=UserFull, **responses), tags=route_tags)
-def register():
+@api.validate(resp=Response(HTTP_200=UserFull, **responses), tags=route_tags)
+def register(json: RegisterUserIn):
     """
     Регистрация нового пользователя с ролью "Пользователь"
     """
-    data = RegisterUserIn(**request.json)
-    data.role_id = ROLES.user.value
+    json.role_id = ROLES.user.value
 
     with db_session_manager() as session:
-        check_credentials(session, data.login, data.email)
-        user = user_crud.create(session, data)
+        check_credentials(session, json.login, json.email)
+        user = user_crud.create(session, json)
         result = UserFull.from_orm(user)
 
         return result.dict()
 
 
 @auth.post('login')
-@api.validate(json=LoginUserIn, resp=Response(HTTP_200=LoginOut, **responses), tags=route_tags)
-def login():
+@api.validate(resp=Response(HTTP_200=LoginOut, **responses), tags=route_tags)
+def login(json: LoginUserIn):
     """
     Авторизует пользователя для получения JWT токена
     """
-    data = LoginUserIn(**request.json)
     incorrect_data_exception = NotAuthorized('Неверный логин или пароль')
 
     with db_session_manager() as session:
         query = session.query(User).options(joinedload(User.role).selectinload(Role.permissions)).where(
             or_(
-                func.lower(User.login) == func.lower(data.login),
-                func.lower(User.email) == func.lower(data.login)
+                func.lower(User.login) == func.lower(json.login),
+                func.lower(User.email) == func.lower(json.login)
             )
         ).order_by(User.deleted_at.desc())
         user = session.scalar(query)
 
-        if (not user) or (not verify_password(data.password, user.password)):
+        if (not user) or (not verify_password(json.password, user.password)):
             raise incorrect_data_exception
 
         if user.deleted_at is not None:
@@ -80,20 +78,19 @@ def login():
 
 
 @auth.post('logout')
-@api.validate(json=TokenIn, resp=Response(HTTP_200=StatusResponse, **responses), tags=route_tags)
+@api.validate(resp=Response(HTTP_200=StatusResponse, **responses), tags=route_tags)
 @jwt_required()
-def logout():
+def logout(json: TokenIn):
     """
     Блокировка токенов пользователя
     """
-    data = TokenIn(**request.json)
     access_token = get_token_from_headers(request.headers)
 
     if not JWTGenerator.validate_jwt(access_token):
         raise NotAuthorized('Неверный токен авторизации')
 
     try:
-        blocked_jwt_storage.add(data.token)
+        blocked_jwt_storage.add(json.token)
         blocked_jwt_storage.add(access_token)
     except ValueError as e:
         raise LogicException(message=str(e))
@@ -102,22 +99,21 @@ def logout():
 
 
 @auth.post('refresh-token')
-@api.validate(json=TokenIn, resp=Response(HTTP_200=LoginOut, **responses), tags=route_tags)
-def generate_access_token():
+@api.validate(resp=Response(HTTP_200=LoginOut, **responses), tags=route_tags)
+def generate_access_token(json: TokenIn):
     """
     Получает новый jwt токен по refresh токену
     """
-    data = TokenIn(**request.json)
     expired_exception = NotAuthorized('Ваш токен более недействителен, пожалуйста авторизуйтесь снова')
 
     try:
-        info = RefreshTokenInfoOut(**JWTGenerator._decode_jwt(data.token))
+        info = RefreshTokenInfoOut(**JWTGenerator._decode_jwt(json.token))
     except (ValidationError, jwt.exceptions.DecodeError):
         raise LogicException('Неверный токен')
     except jwt.exceptions.InvalidSignatureError:
         raise expired_exception
 
-    if blocked_jwt_storage.have(data.token):
+    if blocked_jwt_storage.have(json.token):
         raise expired_exception
 
     with db_session_manager() as session:
@@ -132,17 +128,16 @@ def generate_access_token():
 @auth.post('change-password')
 @api.validate(json=ChangePassword, resp=Response(HTTP_200=StatusResponse, **responses), tags=route_tags)
 @jwt_required()
-def change_password():
+def change_password(json: ChangePassword):
     """
     Смена пароля пользователя
     """
-    data = ChangePassword(**request.json)
     current_user_id = get_jwt_identity()
 
     with db_session_manager() as session:
         user = user_crud.get(session, current_user_id)
 
-        user.password = data.password
+        user.password = json.password
 
         session.flush()
 
@@ -151,7 +146,7 @@ def change_password():
 
 @auth.post('validate-token')
 @api.validate(json=TokenIn, resp=Response(HTTP_200=UserInfoJWT, **responses), tags=route_tags)
-def validate_jwt_token():
+def validate_jwt_token(json: TokenIn):
     """
     Валидация JWT-токена, который прислал сервис (в рамках системы кинотеатра).
 
@@ -163,7 +158,6 @@ def validate_jwt_token():
     Необходимость данный схемы работы обусловлена следующим моментом: сервис, который получает токен, должен
     удостовериться, что этот токен (после того, как пользователь его получил) не был изменен.
     """
-    data = TokenIn(**request.json)
-    user_info = JWTGenerator.validate_jwt(data.token)
+    user_info = JWTGenerator.validate_jwt(json.token)
 
     return user_info.dict()
