@@ -48,6 +48,8 @@ services:
       - DB_HOST=postgres
       - DB_PORT=5432
       - APP_PORT=8000
+      - TRACER_HOST=jaeger
+      - TRACER_PORT=6831
     depends_on:
       - postgres
       - redis
