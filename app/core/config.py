@@ -15,6 +15,7 @@ class Application(Settings):
     name: str = 'Auth Service for Movies Applications'
     host: str = '127.0.0.1'
     port: int = 8000
+    debug: bool = False
 
     class Config(Settings.Config):
         env_prefix = 'APP_'
@@ -65,12 +66,21 @@ class Logger(Settings):
         env_prefix = 'LOG_'
 
 
+class Tracer(Settings):
+    host: str
+    port: int
+
+    class Config(Settings.Config):
+        env_prefix = 'TRACER_'
+
+
 class Envs(Settings):
     app: Application = Application()
     db: Database = Database()
     redis: Redis = Redis()
     token: Token = Token()
     logger: Logger = Logger()
+    tracer: Tracer = Tracer()
 
 
 envs = Envs()
