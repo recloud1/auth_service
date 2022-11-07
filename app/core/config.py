@@ -66,6 +66,13 @@ class Logger(Settings):
         env_prefix = 'LOG_'
 
 
+class Limiter(Settings):
+    rate_limit_per_minute: int = 5
+
+    class Config(Settings.Config):
+        env_prefix = 'RATE_'
+
+
 class Tracer(Settings):
     host: str
     port: int
@@ -80,6 +87,7 @@ class Envs(Settings):
     redis: Redis = Redis()
     token: Token = Token()
     logger: Logger = Logger()
+    limiter: Limiter = Limiter()
     tracer: Tracer = Tracer()
 
 
