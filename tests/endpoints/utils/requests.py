@@ -3,8 +3,8 @@ from typing import Optional, Tuple
 
 from aiohttp import ClientResponse
 
-from core.constants import ApiRoutes, RequestMethods
-from core.settings import test_settings
+from endpoints.core.constants import ApiRoutes, RequestMethods
+from endpoints.core.settings import test_settings
 
 
 async def api_request(

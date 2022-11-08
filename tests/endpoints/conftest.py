@@ -4,7 +4,7 @@ import aiohttp
 import pytest
 import pytest_asyncio
 
-from core.settings import test_settings
+from endpoints.core.settings import test_settings
 
 # Переопределение event_loop - не нужно использовать как фикстуру напрямую
 from redis.client import Redis

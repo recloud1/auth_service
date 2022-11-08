@@ -4,7 +4,8 @@ from typing import Any
 import pytest
 from pydantic import BaseModel
 
-from src.auth.requests import register_user, login, logout, generate_access_token, change_password, validate_token
+from endpoints.src.auth.requests import register_user, login, logout, generate_access_token, change_password, \
+    validate_token, repeat_requests
 
 
 class DataTestExpected(BaseModel):
@@ -175,11 +176,7 @@ async def test_rate_limiter(request_client):
     _, login_data = await login(request_client, user_login=register_data.get('login'), password=password)
     token = login_data.get('token')
 
-    await validate_token(request_client, token=token)
-    await validate_token(request_client, token=token)
-    await validate_token(request_client, token=token)
-    await validate_token(request_client, token=token)
-    response, data = await validate_token(request_client, token=token)
+    response, data = await repeat_requests(5, validate_token, request_client, token=token)
 
     assert response.status == HTTPStatus.OK
 
