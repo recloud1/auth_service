@@ -1,9 +1,10 @@
+from typing import Any
 from uuid import uuid4
 
 from aiohttp import ClientSession
 
-from core.constants import RequestMethods, ApiRoutes
-from utils.requests import api_request
+from endpoints.core.constants import RequestMethods, ApiRoutes
+from endpoints.utils.requests import api_request
 
 
 async def register_user(
@@ -117,7 +118,16 @@ async def validate_token(
         ApiRoutes.auth,
         route_detail='/validate-token',
         with_check=False,
-        data={'token': token}
+        data={'token': token},
+        headers={'Authorization': f'Bearer {token}'}
     )
 
     return response, data
+
+
+async def repeat_requests(times: int, func, *args, **kwargs) -> Any:
+    """Make times calls of func."""
+    result = None
+    for i in range(times):
+        result = await func(*args, **kwargs)
+    return result
