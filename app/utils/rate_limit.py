@@ -4,7 +4,7 @@ from http import HTTPStatus
 from typing import Any
 
 from flask import jsonify
-from flask_jwt_extended import get_jwt
+from flask_jwt_extended import get_jwt, verify_jwt_in_request
 
 from core.config import envs
 
@@ -21,6 +21,7 @@ class Bucket:
 
         @wraps(func)
         def decorator(*args, **kwargs):
+            verify_jwt_in_request()
             uuid = get_jwt()["sub"]
             key = f'{uuid}:{datetime.datetime.now().minute}'
             self.pipeline.incr(key, 1)

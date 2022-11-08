@@ -145,9 +145,9 @@ def change_password(json: ChangePassword):
     return StatusResponse().dict()
 
 
-@bucket.rate_limit
 @auth.post('validate-token')
 @api.validate(json=TokenIn, resp=Response(HTTP_200=UserInfoJWT, **responses), tags=route_tags)
+@bucket.rate_limit
 def validate_jwt_token(json: TokenIn):
     """
     Валидация JWT-токена, который прислал сервис (в рамках системы кинотеатра).

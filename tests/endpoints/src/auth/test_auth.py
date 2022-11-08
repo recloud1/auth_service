@@ -4,8 +4,7 @@ from typing import Any
 import pytest
 from pydantic import BaseModel
 
-from src.auth.requests import register_user, login, logout, generate_access_token, change_password, \
-    validate_token
+from src.auth.requests import register_user, login, logout, generate_access_token, change_password, validate_token
 
 
 class DataTestExpected(BaseModel):
@@ -167,3 +166,23 @@ async def test_validate_token_with_wrong_token_failed(request_client):
     response, data = await validate_token(request_client, token=token)
 
     assert response.status == HTTPStatus.UNAUTHORIZED
+
+
+@pytest.mark.asyncio
+async def test_rate_limiter(request_client):
+    password = '123qwe'
+    _, register_data = await register_user(request_client, password=password, with_check=True)
+    _, login_data = await login(request_client, user_login=register_data.get('login'), password=password)
+    token = login_data.get('token')
+
+    await validate_token(request_client, token=token)
+    await validate_token(request_client, token=token)
+    await validate_token(request_client, token=token)
+    await validate_token(request_client, token=token)
+    response, data = await validate_token(request_client, token=token)
+
+    assert response.status == HTTPStatus.OK
+
+    response, data = await validate_token(request_client, token=token)
+
+    assert response.status == HTTPStatus.TOO_MANY_REQUESTS
