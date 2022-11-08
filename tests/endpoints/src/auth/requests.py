@@ -122,3 +122,9 @@ async def validate_token(
     )
 
     return response, data
+
+
+async def repeat_requests(times: int, func, *args, **kwargs):
+    """Make time call of func."""
+    for i in range(times):
+        await func(*args, **kwargs)
