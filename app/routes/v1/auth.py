@@ -71,7 +71,7 @@ def login(json: LoginUserIn):
         access, refresh = JWTGenerator.create_jwt(user_model)
 
         # TODO: get ip from request
-        session.add(UserLoginHistory(user_id=user.id, ip='', fingerprint=data.fingerprint))
+        session.add(UserLoginHistory(user_id=user.id, ip='', fingerprint=json.fingerprint))
         session.flush()
 
     return LoginOut(token=access, refresh_token=refresh, user=user_model).dict()
