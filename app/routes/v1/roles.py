@@ -1,7 +1,7 @@
 import datetime
 import uuid
 
-from flask import Blueprint, request
+from flask import Blueprint
 from spectree import Response
 
 from core.constants import ROLES
@@ -103,7 +103,7 @@ def delete_role(role_id: uuid.UUID):
     with db_session_manager() as session:
         role = role_crud.get(session, role_id)
 
-        is_role_used_query = session.query(User).where(User.role_id == role_id, User.deleted_at == None)
+        is_role_used_query = session.query(User).where(User.role_id == role_id, User.deleted_at is None)
         is_role_used = session.scalar(is_role_used_query)
         if is_role_used:
             raise LogicException('Данную роль невозможно удалить, так как она назначена на пользователя')

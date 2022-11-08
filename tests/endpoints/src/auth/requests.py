@@ -117,7 +117,8 @@ async def validate_token(
         ApiRoutes.auth,
         route_detail='/validate-token',
         with_check=False,
-        data={'token': token}
+        data={'token': token},
+        headers={'Authorization': f'Bearer {token}'}
     )
 
     return response, data

@@ -19,7 +19,7 @@ async def api_request(
 ) -> Tuple[ClientResponse, dict]:
     async with request_client.request(
             method=method,
-            url=f'http://{test_settings.api.host}:{test_settings.api.port}/{route}/{route_detail}',
+            url=f'http://{test_settings.api.host}:{test_settings.api.port}/{route}{route_detail}',
             params=query_params,
             json=data,
             headers=headers,

@@ -20,6 +20,7 @@ from schemas.users import RegisterUserIn, UserFull, LoginUserIn
 from services.jwt_generator import JWTGenerator
 from utils.auth import verify_password, get_token_from_headers
 from utils.db import db_session_manager
+from utils.rate_limit import bucket
 
 auth = Blueprint(name='auth', import_name=__name__, url_prefix='/v1/auth')
 route_tags = ['Auth']
@@ -146,6 +147,7 @@ def change_password(json: ChangePassword):
 
 @auth.post('validate-token')
 @api.validate(json=TokenIn, resp=Response(HTTP_200=UserInfoJWT, **responses), tags=route_tags)
+@bucket.rate_limit
 def validate_jwt_token(json: TokenIn):
     """
     Валидация JWT-токена, который прислал сервис (в рамках системы кинотеатра).
