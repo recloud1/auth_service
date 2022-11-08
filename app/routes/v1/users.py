@@ -17,10 +17,13 @@ from schemas.users import UserBare, UserFull, UserList, UserCreate, UserUpdate, 
 from utils.required import role_required
 from utils.db import db_session_manager
 
+from utils.rate_limit import bucket
+
 users = Blueprint(name='users', import_name=__name__, url_prefix='/v1/users')
 route_tags = ['Users']
 
 
+@bucket.rate_limit
 @users.get('')
 @api.validate(resp=Response(HTTP_200=UserList, **responses), tags=route_tags)
 @role_required([ROLES.administrator.value])
@@ -81,6 +84,7 @@ def get_user_login_histories(user_id: uuid.UUID):
     ).dict()
 
 
+@bucket.rate_limit
 @users.route('/login-history', methods=['GET'])
 @api.validate(**history_params)
 @role_required([ROLES.user.value])
@@ -138,6 +142,7 @@ def update_user(user_id: uuid.UUID, json: UserUpdate):
         return result.dict()
 
 
+@bucket.rate_limit
 @users.put('/info')
 @api.validate(resp=Response(HTTP_200=UserFull, **responses), tags=route_tags)
 @role_required([ROLES.user.value])
