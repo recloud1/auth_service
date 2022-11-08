@@ -1,8 +1,12 @@
+from uuid import UUID
+
 from schemas.core import Model, IdMixin, ListModel
 
 
 class UserLoginHistoryCreate(Model):
-    pass
+    user_id: UUID
+    ip: str | None = None
+    fingerprint: str | None = None
 
 
 class UserLoginHistoryBare(UserLoginHistoryCreate, IdMixin):

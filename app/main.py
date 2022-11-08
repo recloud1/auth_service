@@ -15,6 +15,7 @@ from core.tracer import configure_tracer
 from internal.users import user_crud
 from models import User
 from routes.v1.auth import auth
+from routes.v1.oauth import oauth
 from routes.v1.roles import roles
 from routes.v1.users import users
 from schemas.core import ErrorSchema
@@ -45,6 +46,7 @@ configure_tracer(app, envs.tracer.host, envs.tracer.port)
 app.register_blueprint(users)
 app.register_blueprint(auth)
 app.register_blueprint(roles)
+app.register_blueprint(oauth)
 
 
 @app.errorhandler(LogicException)

@@ -6,13 +6,18 @@ from sqlalchemy.orm import joinedload, Session
 
 from internal.crud.base import CRUDPaginated
 from internal.crud.utils import retrieve_object
-from models import User, UserLoginHistory
+from models import User, UserLoginHistory, UserSocialAccount
 from schemas.core import GetMultiQueryParam
 from schemas.login_history import UserLoginHistoryBare
 
 user_crud = CRUDPaginated(model=User, get_options=[joinedload(User.role)])
 
 user_login_history_crud = CRUDPaginated(model=UserLoginHistory)
+
+user_social_account_crud = CRUDPaginated(
+    model=UserSocialAccount,
+    get_options=[joinedload(UserSocialAccount.user)]
+)
 
 
 def check_credentials(session: Session, login: str, email: str, exclude_user_id: UUID | None = None):

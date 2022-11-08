@@ -13,6 +13,7 @@ class Settings(BaseSettings):
 
 class Application(Settings):
     name: str = 'Auth Service for Movies Applications'
+    address: str
     host: str = '127.0.0.1'
     port: int = 8000
     debug: bool = False
@@ -81,6 +82,20 @@ class Tracer(Settings):
         env_prefix = 'TRACER_'
 
 
+class OAuthClient(Settings):
+    yandex_client_id: str | None = None
+    yandex_client_secret: str | None = None
+
+    mail_client_id: str | None = None
+    mail_client_secret: str | None = None
+
+    vk_client_id: str | None = None
+    vk_client_secret: str | None = None
+
+    class Config(Settings.Config):
+        env_prefix = 'OAUTH_'
+
+
 class Envs(Settings):
     app: Application = Application()
     db: Database = Database()
@@ -88,6 +103,7 @@ class Envs(Settings):
     token: Token = Token()
     logger: Logger = Logger()
     limiter: Limiter = Limiter()
+    oauth: OAuthClient = OAuthClient()
     tracer: Tracer = Tracer()
 
 
