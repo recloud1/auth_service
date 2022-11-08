@@ -158,6 +158,9 @@ def validate_jwt_token(json: TokenIn):
     Необходимость данный схемы работы обусловлена следующим моментом: сервис, который получает токен, должен
     удостовериться, что этот токен (после того, как пользователь его получил) не был изменен.
     """
+    if blocked_jwt_storage.have(json.token):
+        raise NotAuthorized('Ваш токен более недействителен, пожалуйста авторизуйтесь снова')
+
     user_info = JWTGenerator.validate_jwt(json.token)
 
     return user_info.dict()
