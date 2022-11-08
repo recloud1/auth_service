@@ -7,10 +7,10 @@ from sqlalchemy import or_, func
 from sqlalchemy.orm import joinedload
 
 from core.constants import ROLES
+from core.exceptions import NotAuthorized, NoPermissionException, LogicException
 from core.swagger import api
 from internal.cache import blocked_jwt_storage
 from internal.crud.utils import retrieve_object
-from core.exceptions import NotAuthorized, NoPermissionException, LogicException
 from internal.users import check_credentials, user_crud
 from models import User, Role, UserLoginHistory
 from routes.core import responses

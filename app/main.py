@@ -3,14 +3,15 @@ from json import JSONEncoder
 from uuid import UUID
 
 import click
-from flask import Flask
+from flask import Flask, request
 from flask_jwt_extended import JWTManager
 
 from core.config import envs
-from core.constants import ROLES
+from core.constants import ROLES, REQUEST_HEADER_ID
 from core.exceptions import ObjectNotExists, NoPermissionException, ObjectAlreadyExists, NotAuthorized, \
     LogicException
 from core.swagger import api
+from core.tracer import configure_tracer
 from internal.users import user_crud
 from models import User
 from routes.v1.auth import auth
@@ -39,6 +40,8 @@ app.config['JWT_TOKEN_LOCATION'] = 'headers'
 app.config['JWT_HEADER_NAME'] = 'Authorization'
 app.config['JWT_HEADER_TYPE'] = 'Bearer'
 jwt = JWTManager(app)
+
+configure_tracer(app, envs.tracer.host, envs.tracer.port)
 
 app.register_blueprint(users)
 app.register_blueprint(auth)
@@ -71,6 +74,13 @@ def handle_error(e):
     return ErrorSchema(detail=str(e)).dict(), HTTPStatus.FORBIDDEN
 
 
+@app.before_request
+def before_request():
+    request_id = request.headers.get(REQUEST_HEADER_ID)
+    if not request_id and not envs.app.debug:
+        raise RuntimeError('Request Id is Required')
+
+
 @click.command(name='create-superuser')
 @click.option('--login', prompt='Введите логин суперпользователя', help='Логин суперпользователя')
 @click.option('--password', prompt='Введите пароль суперпользователя', help='Пароль суперпользователя')
@@ -93,4 +103,4 @@ def create_user(login: str, password: str):
 
 if __name__ == '__main__':
     api.register(app)
-    app.run(host='0.0.0.0', port=envs.app.port)
+    app.run(host='0.0.0.0', port=envs.app.port, debug=envs.app.debug)

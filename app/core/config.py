@@ -16,6 +16,7 @@ class Application(Settings):
     address: str
     host: str = '127.0.0.1'
     port: int = 8000
+    debug: bool = False
 
     class Config(Settings.Config):
         env_prefix = 'APP_'
@@ -66,6 +67,14 @@ class Logger(Settings):
         env_prefix = 'LOG_'
 
 
+class Tracer(Settings):
+    host: str
+    port: int
+
+    class Config(Settings.Config):
+        env_prefix = 'TRACER_'
+
+
 class OAuthClient(Settings):
     yandex_client_id: str | None = None
     yandex_client_secret: str | None = None
@@ -87,6 +96,7 @@ class Envs(Settings):
     token: Token = Token()
     logger: Logger = Logger()
     oauth: OAuthClient = OAuthClient()
+    tracer: Tracer = Tracer()
 
 
 envs = Envs()
