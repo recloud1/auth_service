@@ -176,8 +176,7 @@ async def test_rate_limiter(request_client):
     _, login_data = await login(request_client, user_login=register_data.get('login'), password=password)
     token = login_data.get('token')
 
-    await repeat_requests(4, validate_token, request_client, token=token)
-    response, data = await validate_token(request_client, token=token)
+    response, data = await repeat_requests(5, validate_token, request_client, token=token)
 
     assert response.status == HTTPStatus.OK
 
