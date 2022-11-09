@@ -86,4 +86,13 @@ class RegisterUserIn(Model):
 class LoginUserIn(Model):
     login: str = Field(..., description='Почта или логин пользователя')
     password: str
+    code: str | None = Field(None, description='Код при активной двухфакторной аутентификации')
     fingerprint: dict | None
+
+
+class TwoAuthLinkCodeIn(Model):
+    code: str
+
+
+class TwoAuthLinkOut(Model):
+    data: str

@@ -1,6 +1,7 @@
 import uuid
 
-from sqlalchemy import Column, DateTime, ForeignKey, String, Text, UniqueConstraint
+from sqlalchemy import Column, DateTime, ForeignKey, String, Text, Boolean
+from sqlalchemy import UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
@@ -13,10 +14,11 @@ from utils.partitions import user_partition, social_accounts_partition
 class User(TimestampMixin, Base):
     __repr_name__ = 'Пользователь'
     __tablename__ = 'users'
-    __table_args__ = {'schema': 'users',
-                      'postgresql_partition_by': 'RANGE (created_at)',
-                      'listeners': [('after_create', user_partition)],
-                      }
+    __table_args__ = {
+        'schema': 'users',
+        'postgresql_partition_by': 'RANGE (created_at)',
+        'listeners': [('after_create', user_partition)],
+    }
 
     id: str = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     role_id: str = Column(UUID(as_uuid=True), ForeignKey('roles.roles.id'), nullable=False)
@@ -24,6 +26,12 @@ class User(TimestampMixin, Base):
     login = Column(String(128), nullable=False, unique=True)
     email = Column(String(256), nullable=True, unique=True)
     password = Column(String(256), nullable=True)
+    is_use_additional_auth = Column(
+        Boolean,
+        nullable=False,
+        server_default='false',
+        comment='Использовать ли двухфакторную аутентификацию'
+    )
 
     first_name: str = Column(Text, nullable=True)
     last_name: str = Column(Text, nullable=True)
@@ -59,10 +67,11 @@ class UserSocialAccount(Base):
     __repr_name__ = 'Аккаунт пользователя заведенный через социальные сети'
     __tablename__ = 'user_social_accounts'
     __table_args__ = ((UniqueConstraint('social_id', 'social_name', name='unique_social_pk')),
-                      {'schema': 'users',
-                       'postgresql_partition_by': 'LIST (social_name)',
-                       'listeners': [('after_create', social_accounts_partition)],
-                       })
+                      {
+                          'schema': 'users',
+                          'postgresql_partition_by': 'LIST (social_name)',
+                          'listeners': [('after_create', social_accounts_partition)],
+                      })
 
     id: str = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
 

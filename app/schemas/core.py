@@ -62,4 +62,3 @@ class GetMultiQueryParam(BaseModel):
     show_deleted: bool = False
     sort_by: str = 'id'
     descending: bool = False
-

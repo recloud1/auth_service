@@ -9,9 +9,9 @@ from sqlalchemy.orm import joinedload
 from core.constants import ROLES
 from core.exceptions import NotAuthorized, NoPermissionException, LogicException
 from core.swagger import api
-from internal.cache import blocked_jwt_storage
+from internal.cache import blocked_jwt_storage, redis_cache
 from internal.crud.utils import retrieve_object
-from internal.users import check_credentials, user_crud
+from internal.users import check_credentials, user_crud, check_connect_two_auth_link
 from models import User, Role, UserLoginHistory
 from routes.core import responses
 from schemas.auth import LoginOut, UserInfo, RefreshTokenInfoOut, TokenIn, ChangePassword, UserInfoJWT
@@ -57,7 +57,7 @@ def login(json: LoginUserIn):
                 func.lower(User.email) == func.lower(json.login)
             )
         ).order_by(User.deleted_at.desc())
-        user = session.scalar(query)
+        user: User = session.scalar(query)
 
         if (not user) or (not verify_password(json.password, user.password)):
             raise incorrect_data_exception
@@ -70,6 +70,12 @@ def login(json: LoginUserIn):
 
         user_model = UserInfo.from_orm(user)
         access, refresh = JWTGenerator.create_jwt(user_model)
+
+        if user.is_use_additional_auth:
+            if not json.code:
+                raise NotAuthorized('Вам необходимо пройти двухфакторную аутентификацию')
+
+            check_connect_two_auth_link(json.code, redis_cache, user)
 
         # TODO: get ip from request
         session.add(UserLoginHistory(user_id=user.id, ip='', fingerprint=json.fingerprint))
