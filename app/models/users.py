@@ -7,11 +7,16 @@ from sqlalchemy.orm import relationship
 
 from models import Base, Role, TimestampMixin, fresh_timestamp
 
+from utils.partitions import user_partition, social_accounts_partition
+
 
 class User(TimestampMixin, Base):
     __repr_name__ = 'Пользователь'
     __tablename__ = 'users'
-    __table_args__ = {'schema': 'users'}
+    __table_args__ = {'schema': 'users',
+                      'postgresql_partition_by': 'RANGE (created_at)',
+                      'listeners': [('after_create', user_partition)],
+                      }
 
     id: str = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     role_id: str = Column(UUID(as_uuid=True), ForeignKey('roles.roles.id'), nullable=False)
@@ -54,7 +59,10 @@ class UserSocialAccount(Base):
     __repr_name__ = 'Аккаунт пользователя заведенный через социальные сети'
     __tablename__ = 'user_social_accounts'
     __table_args__ = ((UniqueConstraint('social_id', 'social_name', name='unique_social_pk')),
-                      {'schema': 'users'})
+                      {'schema': 'users',
+                       'postgresql_partition_by': 'LIST (social_name)',
+                       'listeners': [('after_create', social_accounts_partition)],
+                       })
 
     id: str = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
 
