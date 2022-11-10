@@ -10,7 +10,7 @@ from core.config import envs
 
 from redis.client import Redis
 
-from core.exceptions.default_messages import too_many_requests_msg
+from core.exceptions.default_messages import ExceptionMessages
 
 
 class Bucket:
@@ -35,7 +35,9 @@ class Bucket:
             request_num = self.pipeline.execute()[0]
             rate_limit = envs.limiter.rate_limit_per_minute
             if request_num > rate_limit:
-                response = jsonify(message={HTTPStatus.TOO_MANY_REQUESTS: too_many_requests_msg})
+                response = jsonify(
+                    message={HTTPStatus.TOO_MANY_REQUESTS: ExceptionMessages.too_many_requests()}
+                )
                 response.status_code = HTTPStatus.TOO_MANY_REQUESTS
                 return response
             return func(*args, **kwargs)

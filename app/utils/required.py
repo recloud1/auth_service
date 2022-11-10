@@ -6,7 +6,7 @@ from flask_jwt_extended import verify_jwt_in_request
 from flask_jwt_extended.view_decorators import LocationType
 
 from core.constants import ROLES
-from core.exceptions.default_messages import expired_token_msg
+from core.exceptions.default_messages import ExceptionMessages
 from core.exceptions.exceptions import NoPermissionException
 from internal.cache import blocked_jwt_storage
 from schemas.auth import TokenInfo
@@ -37,7 +37,7 @@ def role_required(
             is_blocked = blocked_jwt_storage.have(access_token)
 
             if is_blocked:
-                raise NoPermissionException(expired_token_msg)
+                raise NoPermissionException(ExceptionMessages.expired_token())
 
             if not has_access and not has_root_access:
                 raise NoPermissionException()

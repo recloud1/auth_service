@@ -26,7 +26,6 @@ def get_roles(query: GetMultiQueryParam):
     """
     Получение списка ролей доступных в системе
     """
-    # query_params = GetMultiQueryParam(**request.values)
     with db_session_manager() as session:
         roles_result, count = role_crud.get_multi(
             session,
@@ -62,7 +61,7 @@ def create_role(json: RoleCreate):
         exists = session.scalar(exists_query)
 
         if exists:
-            raise ObjectAlreadyExists('Данная роль уже существует')
+            raise ObjectAlreadyExists()
 
         result_role = role_crud.create(session, json)
 
@@ -83,7 +82,7 @@ def update_role(role_id: uuid.UUID, json: RoleUpdate):
         exists_role = session.scalar(exists_query)
 
         if exists_role:
-            raise ObjectAlreadyExists(f'Роль с таким наименованием уже существует')
+            raise ObjectAlreadyExists()
 
         role = role_crud.get(session, role_id)
         role = role_crud.update(session, role, json)

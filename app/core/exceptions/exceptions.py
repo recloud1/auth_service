@@ -1,7 +1,6 @@
 from typing import Collection
 
-from core.exceptions.default_messages import no_permission_msg, object_not_exists_msg, \
-    object_already_exists_msg, logic_msg
+from core.exceptions.default_messages import ExceptionMessages
 from models import Base
 
 
@@ -17,7 +16,7 @@ class NoPermissionException(Exception):
     У пользователя нет прав на выполнение запроса
     """
 
-    def __init__(self, message=no_permission_msg, *args):
+    def __init__(self, message=ExceptionMessages.no_permission(), *args):
         super().__init__(message, *args)
 
 
@@ -34,7 +33,7 @@ class ObjectNotExists(Exception):
 
     def __init__(
             self,
-            mess: str = object_not_exists_msg,
+            mess: str = ExceptionMessages.object_not_exists(),
             model: Base = None,
             ids: Collection[int] = None,
             *args
@@ -52,12 +51,12 @@ class ObjectAlreadyExists(Exception):
     (актуально для синхронных функций)
     """
 
-    def __init__(self, message: str = object_already_exists_msg):
+    def __init__(self, message: str = ExceptionMessages.object_already_exists()):
         super().__init__(message)
 
 
 class LogicException(Exception):
-    def __init__(self, message=logic_msg, *args):
+    def __init__(self, message=ExceptionMessages.logic(), *args):
         super().__init__(message, *args)
 
 

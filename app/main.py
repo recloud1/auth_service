@@ -8,7 +8,7 @@ from flask_jwt_extended import JWTManager
 
 from core.config import envs
 from core.constants import ROLES, REQUEST_HEADER_ID
-from core.exceptions.default_messages import request_id_necessary_msg
+from core.exceptions.default_messages import ExceptionMessages
 from core.exceptions.exceptions import LogicException, NotAuthorized, ObjectAlreadyExists, ObjectNotExists, \
     NoPermissionException
 from core.swagger import api
@@ -80,7 +80,7 @@ def handle_error(e):
 def before_request():
     request_id = request.headers.get(REQUEST_HEADER_ID)
     if not request_id and not envs.app.debug:
-        raise RuntimeError(request_id_necessary_msg)
+        raise RuntimeError(ExceptionMessages.request_id_necessary())
 
 
 @click.command(name='create-superuser')

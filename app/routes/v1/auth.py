@@ -7,8 +7,7 @@ from sqlalchemy import or_, func
 from sqlalchemy.orm import joinedload
 
 from core.constants import ROLES
-from core.exceptions.default_messages import two_auth_necessary_msg, incorrect_data_msg, blocked_account_msg, \
-    incorrect_token_msg, expired_token_msg
+from core.exceptions.default_messages import ExceptionMessages
 from core.exceptions.exceptions import NotAuthorized, NoPermissionException, LogicException
 from core.swagger import api
 from internal.cache import blocked_jwt_storage, redis_cache
@@ -60,17 +59,17 @@ def login(json: LoginUserIn):
         user: User = session.scalar(query)
 
         if (not user) or (not verify_password(json.password, user.password)):
-            raise NotAuthorized(incorrect_data_msg)
+            raise NotAuthorized(ExceptionMessages.incorrect_data())
 
         if user.deleted_at is not None:
-            raise NoPermissionException(blocked_account_msg)
+            raise NoPermissionException(ExceptionMessages.blocked_account())
 
         user_model = UserInfo.from_orm(user)
         access, refresh = JWTGenerator.create_jwt(user_model)
 
         if user.is_use_additional_auth:
             if not json.code:
-                raise NotAuthorized(two_auth_necessary_msg)
+                raise NotAuthorized(ExceptionMessages.two_auth_necessary())
 
             check_connect_two_auth_link(json.code, redis_cache, user)
 
@@ -91,7 +90,7 @@ def logout(json: TokenIn):
     access_token = get_token_from_headers(request.headers)
 
     if not JWTGenerator.validate_jwt(access_token):
-        raise NotAuthorized(incorrect_token_msg)
+        raise NotAuthorized(ExceptionMessages.incorrect_token())
 
     try:
         blocked_jwt_storage.add(json.token)
@@ -108,12 +107,12 @@ def generate_access_token(json: TokenIn):
     """
     Получает новый jwt токен по refresh токену
     """
-    expired_exception = NotAuthorized(expired_token_msg)
+    expired_exception = NotAuthorized(ExceptionMessages.expired_token())
 
     try:
         info = RefreshTokenInfoOut(**JWTGenerator._decode_jwt(json.token))
     except (ValidationError, jwt.exceptions.DecodeError):
-        raise LogicException('Неверный токен')
+        raise LogicException(ExceptionMessages.incorrect_token())
     except jwt.exceptions.InvalidSignatureError:
         raise expired_exception
 
@@ -164,7 +163,7 @@ def validate_jwt_token(json: TokenIn):
     удостовериться, что этот токен (после того, как пользователь его получил) не был изменен.
     """
     if blocked_jwt_storage.have(json.token):
-        raise NotAuthorized(expired_token_msg)
+        raise NotAuthorized(ExceptionMessages.expired_token())
 
     user_info = JWTGenerator.validate_jwt(json.token)
 

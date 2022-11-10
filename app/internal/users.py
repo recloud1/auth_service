@@ -5,7 +5,7 @@ from sqlalchemy import or_
 from sqlalchemy.orm import joinedload, Session
 
 from core.config import envs
-from core.exceptions.default_messages import two_auth_already_exists_msg, two_auth_code_not_valid_msg
+from core.exceptions.default_messages import ExceptionMessages
 from core.exceptions.exceptions import ObjectAlreadyExists, LogicException
 from internal.crud.base import CRUDPaginated
 from internal.crud.utils import retrieve_object
@@ -84,7 +84,7 @@ def connect_two_auth_link(session: Session, cache: RedisCache, user_id: UUID) ->
     user_secret = cache.get(user_key)
 
     if user.is_use_additional_auth and user_secret:
-        raise LogicException(two_auth_already_exists_msg)
+        raise LogicException(ExceptionMessages.two_auth_already_exists())
 
     cache.add(user_key, secret)
 
@@ -98,6 +98,6 @@ def check_connect_two_auth_link(code: str, cache: RedisCache, user: User) -> boo
     totp = TOTP(secret)
 
     if not totp.verify(code):
-        raise LogicException(two_auth_code_not_valid_msg)
+        raise LogicException(ExceptionMessages.two_auth_code_not_valid())
 
     return True
