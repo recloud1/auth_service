@@ -41,7 +41,8 @@ app.config['JWT_HEADER_NAME'] = 'Authorization'
 app.config['JWT_HEADER_TYPE'] = 'Bearer'
 jwt = JWTManager(app)
 
-configure_tracer(app, envs.tracer.host, envs.tracer.port)
+if envs.tracer.enable:
+    configure_tracer(app, envs.tracer.host, envs.tracer.port)
 
 app.register_blueprint(users)
 app.register_blueprint(auth)

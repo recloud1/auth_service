@@ -1,6 +1,6 @@
 from urllib import parse
 
-from pydantic import BaseSettings, SecretStr
+from pydantic import BaseSettings, SecretStr, Field
 
 
 class Settings(BaseSettings):
@@ -75,6 +75,7 @@ class Limiter(Settings):
 
 
 class Tracer(Settings):
+    enable: bool = True
     host: str
     port: int
 
