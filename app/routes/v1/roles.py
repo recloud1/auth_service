@@ -5,7 +5,7 @@ from flask import Blueprint
 from spectree import Response
 
 from core.constants import ROLES
-from core.exceptions import ObjectAlreadyExists, LogicException
+from core.exceptions.exceptions import ObjectAlreadyExists, LogicException
 from core.swagger import api
 from internal.roles import role_crud
 from models import Role, User

@@ -1,11 +1,10 @@
 import datetime
 import uuid
-from io import StringIO, BytesIO
+from io import BytesIO
 
 import qrcode
 from flask import Blueprint, request, send_file
 from flask_jwt_extended import get_jwt_identity, jwt_required
-from pyotp import TOTP, random_base32
 from spectree import Response
 
 from core.constants import ROLES
@@ -18,8 +17,7 @@ from models import User, Role
 from routes.core import responses
 from schemas.core import GetMultiQueryParam, StatusResponse
 from schemas.login_history import UserLoginHistoryList
-from schemas.users import UserBare, UserFull, UserList, UserCreate, UserUpdate, SetUserRole, TwoAuthLinkOut, \
-    TwoAuthLinkCodeIn
+from schemas.users import UserBare, UserFull, UserList, UserCreate, UserUpdate, SetUserRole, TwoAuthLinkCodeIn
 from utils.db import db_session_manager
 from utils.required import role_required
 

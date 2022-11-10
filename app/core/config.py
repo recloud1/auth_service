@@ -1,6 +1,6 @@
 from urllib import parse
 
-from pydantic import BaseSettings, SecretStr, Field
+from pydantic import BaseSettings, SecretStr
 
 
 class Settings(BaseSettings):

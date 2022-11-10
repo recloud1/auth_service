@@ -1,7 +1,7 @@
 from typing import Type, TypeVar, Collection, Iterable
 from uuid import UUID
 
-from core.exceptions import generate_entity_not_exists_exception, ObjectNotExists
+from core.exceptions.exceptions import generate_entity_not_exists_exception, ObjectNotExists
 from sqlalchemy.orm import Query
 
 from models import Base

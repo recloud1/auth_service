@@ -5,7 +5,8 @@ import jwt
 from pydantic import ValidationError
 
 from core.config import envs
-from core.exceptions import NotAuthorized
+from core.exceptions.default_messages import incorrect_token_msg, expired_token_msg
+from core.exceptions.exceptions import NotAuthorized
 from core.logger import get_logger
 from schemas.auth import UserInfo, Token, RefreshTokenInfoIn, TokenInfo, UserInfoJWT
 from utils.trace import trace_request
@@ -88,7 +89,7 @@ class JWTGenerator:
         user_info = cls.parse_jwt(token)
 
         if not user_info:
-            raise NotAuthorized('Неверный токен авторизации')
+            raise NotAuthorized(incorrect_token_msg)
 
         expired_at = datetime.datetime.fromtimestamp(
             user_info.token_expired_at,
@@ -97,6 +98,6 @@ class JWTGenerator:
 
         current_time = datetime.datetime.utcnow()
         if expired_at < current_time:
-            raise NotAuthorized('Ваш токен более недействителен, пожалуйста авторизуйтесь снова')
+            raise NotAuthorized(expired_token_msg)
 
         return UserInfoJWT(**user_info.user.dict())

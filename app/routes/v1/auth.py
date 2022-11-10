@@ -7,7 +7,9 @@ from sqlalchemy import or_, func
 from sqlalchemy.orm import joinedload
 
 from core.constants import ROLES
-from core.exceptions import NotAuthorized, NoPermissionException, LogicException
+from core.exceptions.default_messages import two_auth_necessary_msg, incorrect_data_msg, blocked_account_msg, \
+    incorrect_token_msg, expired_token_msg
+from core.exceptions.exceptions import NotAuthorized, NoPermissionException, LogicException
 from core.swagger import api
 from internal.cache import blocked_jwt_storage, redis_cache
 from internal.crud.utils import retrieve_object
@@ -48,8 +50,6 @@ def login(json: LoginUserIn):
     """
     Авторизует пользователя для получения JWT токена
     """
-    incorrect_data_exception = NotAuthorized('Неверный логин или пароль')
-
     with db_session_manager() as session:
         query = session.query(User).options(joinedload(User.role).selectinload(Role.permissions)).where(
             or_(
@@ -60,20 +60,17 @@ def login(json: LoginUserIn):
         user: User = session.scalar(query)
 
         if (not user) or (not verify_password(json.password, user.password)):
-            raise incorrect_data_exception
+            raise NotAuthorized(incorrect_data_msg)
 
         if user.deleted_at is not None:
-            raise NoPermissionException(
-                'Ваша учётная запись заблокирована.'
-                ' О причинах вы можете узнать у тех. поддержки'
-            )
+            raise NoPermissionException(blocked_account_msg)
 
         user_model = UserInfo.from_orm(user)
         access, refresh = JWTGenerator.create_jwt(user_model)
 
         if user.is_use_additional_auth:
             if not json.code:
-                raise NotAuthorized('Вам необходимо пройти двухфакторную аутентификацию')
+                raise NotAuthorized(two_auth_necessary_msg)
 
             check_connect_two_auth_link(json.code, redis_cache, user)
 
@@ -94,7 +91,7 @@ def logout(json: TokenIn):
     access_token = get_token_from_headers(request.headers)
 
     if not JWTGenerator.validate_jwt(access_token):
-        raise NotAuthorized('Неверный токен авторизации')
+        raise NotAuthorized(incorrect_token_msg)
 
     try:
         blocked_jwt_storage.add(json.token)
@@ -111,7 +108,7 @@ def generate_access_token(json: TokenIn):
     """
     Получает новый jwt токен по refresh токену
     """
-    expired_exception = NotAuthorized('Ваш токен более недействителен, пожалуйста авторизуйтесь снова')
+    expired_exception = NotAuthorized(expired_token_msg)
 
     try:
         info = RefreshTokenInfoOut(**JWTGenerator._decode_jwt(json.token))
@@ -167,7 +164,7 @@ def validate_jwt_token(json: TokenIn):
     удостовериться, что этот токен (после того, как пользователь его получил) не был изменен.
     """
     if blocked_jwt_storage.have(json.token):
-        raise NotAuthorized('Ваш токен более недействителен, пожалуйста авторизуйтесь снова')
+        raise NotAuthorized(expired_token_msg)
 
     user_info = JWTGenerator.validate_jwt(json.token)
 

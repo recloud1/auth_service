@@ -1,4 +1,4 @@
-from core.exceptions import NotAuthorized
+from core.exceptions.exceptions import NotAuthorized
 
 
 class OAuthException(NotAuthorized):

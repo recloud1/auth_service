@@ -10,12 +10,18 @@ from core.config import envs
 
 from redis.client import Redis
 
+from core.exceptions.default_messages import too_many_requests_msg
+
 
 class Bucket:
     """Leaking bucket rate limiting decorator"""
 
     def __init__(self):
-        self.pipeline = Redis(host=envs.redis.host, port=envs.redis.port, password=envs.redis.password).pipeline()
+        self.pipeline = Redis(
+            host=envs.redis.host,
+            port=envs.redis.port,
+            password=envs.redis.password
+        ).pipeline()
 
     def rate_limit(self, func) -> Any:
 
@@ -29,7 +35,7 @@ class Bucket:
             request_num = self.pipeline.execute()[0]
             rate_limit = envs.limiter.rate_limit_per_minute
             if request_num > rate_limit:
-                response = jsonify(message={HTTPStatus.TOO_MANY_REQUESTS: "Too Many Requests"})
+                response = jsonify(message={HTTPStatus.TOO_MANY_REQUESTS: too_many_requests_msg})
                 response.status_code = HTTPStatus.TOO_MANY_REQUESTS
                 return response
             return func(*args, **kwargs)

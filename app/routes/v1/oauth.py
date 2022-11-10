@@ -6,7 +6,7 @@ from spectree import Response
 from sqlalchemy.orm import joinedload
 
 from core.constants import ROLES
-from core.exceptions import ObjectNotExists, LogicException
+from core.exceptions.exceptions import ObjectNotExists, LogicException
 from core.swagger import api
 from internal.cache import blocked_jwt_storage
 from internal.oauth.clients import social_clients

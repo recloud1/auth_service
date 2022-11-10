@@ -5,7 +5,8 @@ from sqlalchemy import or_
 from sqlalchemy.orm import joinedload, Session
 
 from core.config import envs
-from core.exceptions import ObjectAlreadyExists, LogicException
+from core.exceptions.default_messages import two_auth_already_exists_msg, two_auth_code_not_valid_msg
+from core.exceptions.exceptions import ObjectAlreadyExists, LogicException
 from internal.crud.base import CRUDPaginated
 from internal.crud.utils import retrieve_object
 from models import User, UserLoginHistory, UserSocialAccount
@@ -44,7 +45,7 @@ def check_credentials(session: Session, login: str, email: str, exclude_user_id:
     exists_user = session.scalar(exists_user_query)
 
     if exists_user:
-        raise ObjectAlreadyExists('Пользователь с такими данными уже существует')
+        raise ObjectAlreadyExists()
 
 
 def get_login_history(
@@ -83,7 +84,7 @@ def connect_two_auth_link(session: Session, cache: RedisCache, user_id: UUID) ->
     user_secret = cache.get(user_key)
 
     if user.is_use_additional_auth and user_secret:
-        raise LogicException('Двухфакторная аутентификация уже подключена')
+        raise LogicException(two_auth_already_exists_msg)
 
     cache.add(user_key, secret)
 
@@ -97,7 +98,6 @@ def check_connect_two_auth_link(code: str, cache: RedisCache, user: User) -> boo
     totp = TOTP(secret)
 
     if not totp.verify(code):
-        raise LogicException('Введенный код неверен')
+        raise LogicException(two_auth_code_not_valid_msg)
 
     return True
-
