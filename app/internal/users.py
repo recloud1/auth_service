@@ -1,16 +1,24 @@
 from uuid import UUID
 
-from core.exceptions import ObjectAlreadyExists
+from pyotp import TOTP, random_base32
 from sqlalchemy import or_
 from sqlalchemy.orm import joinedload, Session
 
+from core.config import envs
+from core.exceptions import ObjectAlreadyExists, LogicException
 from internal.crud.base import CRUDPaginated
 from internal.crud.utils import retrieve_object
 from models import User, UserLoginHistory, UserSocialAccount
 from schemas.core import GetMultiQueryParam
 from schemas.login_history import UserLoginHistoryBare
+from services.cache import RedisCache
 
-user_crud = CRUDPaginated(model=User, get_options=[joinedload(User.role)])
+
+class UserCrud(CRUDPaginated):
+    pass
+
+
+user_crud = UserCrud(model=User, get_options=[joinedload(User.role)])
 
 user_login_history_crud = CRUDPaginated(model=UserLoginHistory)
 
@@ -64,3 +72,32 @@ def get_login_history(
     result = [UserLoginHistoryBare.from_orm(i) for i in login_history]
 
     return result
+
+
+def connect_two_auth_link(session: Session, cache: RedisCache, user_id: UUID) -> str:
+    secret = random_base32()
+    totp = TOTP(secret)
+    user_key = str(user_id)
+
+    user = user_crud.get(session, user_id)
+    user_secret = cache.get(user_key)
+
+    if user.is_use_additional_auth and user_secret:
+        raise LogicException('Двухфакторная аутентификация уже подключена')
+
+    cache.add(user_key, secret)
+
+    provisioning_url = totp.provisioning_uri(name=str(user.id), issuer_name=envs.app.name)
+
+    return provisioning_url
+
+
+def check_connect_two_auth_link(code: str, cache: RedisCache, user: User) -> bool:
+    secret = cache.get(str(user.id))
+    totp = TOTP(secret)
+
+    if not totp.verify(code):
+        raise LogicException('Введенный код неверен')
+
+    return True
+

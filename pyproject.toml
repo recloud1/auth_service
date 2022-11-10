@@ -26,6 +26,9 @@ flask = "^2.2.2"
 requests = "^2.28.1"
 opentelemetry-instrumentation-flask = "^0.35b0"
 opentelemetry-exporter-jaeger = "^1.14.0"
+pyotp = "^2.7.0"
+qrcode = "^7.3.1"
+image = "^1.5.33"
 
 
 [tool.poetry.group.dev.dependencies]

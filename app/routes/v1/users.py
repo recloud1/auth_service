@@ -1,21 +1,27 @@
 import datetime
 import uuid
+from io import StringIO, BytesIO
 
-from flask import Blueprint, request
-from flask_jwt_extended import get_jwt_identity
+import qrcode
+from flask import Blueprint, request, send_file
+from flask_jwt_extended import get_jwt_identity, jwt_required
+from pyotp import TOTP, random_base32
 from spectree import Response
 
 from core.constants import ROLES
 from core.swagger import api
+from internal.cache import redis_cache
 from internal.crud.utils import retrieve_object
-from internal.users import user_crud, check_credentials, get_login_history
+from internal.users import user_crud, check_credentials, get_login_history, connect_two_auth_link, \
+    check_connect_two_auth_link
 from models import User, Role
 from routes.core import responses
-from schemas.core import GetMultiQueryParam
+from schemas.core import GetMultiQueryParam, StatusResponse
 from schemas.login_history import UserLoginHistoryList
-from schemas.users import UserBare, UserFull, UserList, UserCreate, UserUpdate, SetUserRole
-from utils.required import role_required
+from schemas.users import UserBare, UserFull, UserList, UserCreate, UserUpdate, SetUserRole, TwoAuthLinkOut, \
+    TwoAuthLinkCodeIn
 from utils.db import db_session_manager
+from utils.required import role_required
 
 users = Blueprint(name='users', import_name=__name__, url_prefix='/v1/users')
 route_tags = ['Users']
@@ -120,7 +126,7 @@ def create_user(json: UserCreate):
         return result.dict()
 
 
-@users.put('')
+@users.put('/<user_id>')
 @api.validate(resp=Response(HTTP_200=UserFull, **responses), tags=route_tags)
 @role_required([ROLES.administrator.value])
 def update_user(user_id: uuid.UUID, json: UserUpdate):
@@ -156,6 +162,42 @@ def update_user_info(json: UserUpdate):
         result = UserFull.from_orm(result_user)
 
         return result.dict()
+
+
+@users.post('/<user_id>/two-auth/sync')
+@jwt_required()
+def connect_two_auth(user_id: uuid.UUID):
+    """
+    Использование двухфакторной аутентификации пользователя
+    """
+    with db_session_manager() as session:
+        link = connect_two_auth_link(session, redis_cache, user_id)
+
+    qr = qrcode.make(link)
+
+    img_io = BytesIO()
+    qr.save(img_io, 'PNG')
+    img_io.seek(0)
+
+    return send_file(img_io, mimetype='image/png')
+
+
+@users.post('/<user_id>/two-auth/check')
+@api.validate(resp=Response(HTTP_200=StatusResponse, **responses), tags=route_tags)
+@jwt_required()
+def check_connect_two_auth(user_id: uuid.UUID, json: TwoAuthLinkCodeIn):
+    """
+    Проверка введеного кода для подключения двухфакторной аутентификации пользоавтелем
+    """
+    with db_session_manager() as session:
+        user = user_crud.get(session, user_id)
+        check_connect_two_auth_link(json.code, redis_cache, user)
+
+        if not user.is_use_additional_auth:
+            user.is_use_additional_auth = True
+            session.flush()
+
+    return StatusResponse()
 
 
 @users.put('/<user_id>/roles')
