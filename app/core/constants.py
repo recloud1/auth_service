@@ -8,3 +8,5 @@ class ROLES(str, enum.Enum):
 
 
 REQUEST_HEADER_ID = 'X-Request-Id'
+
+IP_HEADER_PARAM = 'HTTP_X_FORWARDED_FOR'

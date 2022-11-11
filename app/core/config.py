@@ -1,6 +1,6 @@
 from urllib import parse
 
-from pydantic import BaseSettings, SecretStr
+from pydantic import BaseSettings, SecretStr, Field
 
 
 class Settings(BaseSettings):
@@ -97,6 +97,14 @@ class OAuthClient(Settings):
         env_prefix = 'OAUTH_'
 
 
+class Captcha(Settings):
+    max_count: int = Field(default=1, description='Максимальное количество попыток на решение одной каптчи')
+    blocking_time: int = Field(default=60, description='Блокировка пользователя по времени (сек.)')
+
+    class Config(Settings.Config):
+        env_prefix = 'CAPTCHA_'
+
+
 class Envs(Settings):
     app: Application = Application()
     db: Database = Database()
@@ -106,6 +114,7 @@ class Envs(Settings):
     limiter: Limiter = Limiter()
     oauth: OAuthClient = OAuthClient()
     tracer: Tracer = Tracer()
+    captcha: Captcha = Captcha()
 
 
 envs = Envs()

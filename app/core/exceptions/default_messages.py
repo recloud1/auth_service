@@ -35,3 +35,5 @@ class ExceptionMessages:
         message='Request Id - обязательный параметр при выполнение запроса'
     )
     too_many_requests = ExceptionTextElement(message='Too Many Requests')
+
+    captcha_not_valid = ExceptionTextElement(message='Введенный код неверен')

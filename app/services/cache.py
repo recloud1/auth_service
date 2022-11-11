@@ -18,6 +18,16 @@ class RedisCache:
         else:
             self.client.set(name=key, value=value)
 
+    def pop(self, key: str) -> Any:
+        """
+        Удаление элемента из хранилища
+        """
+        value = self.get(key)
+
+        self.client.delete(key)
+
+        return value
+
     def get(self, key: str) -> Any | None:
         """
         Получение данных по ключу

@@ -3,7 +3,7 @@ from json import JSONEncoder
 from uuid import UUID
 
 import click
-from flask import Flask, request
+from flask import Flask, request, redirect, url_for
 from flask_jwt_extended import JWTManager
 
 from core.config import envs
@@ -13,14 +13,17 @@ from core.exceptions.exceptions import LogicException, NotAuthorized, ObjectAlre
     NoPermissionException
 from core.swagger import api
 from core.tracer import configure_tracer
+from internal.cache import redis_cache
 from internal.users import user_crud
 from models import User
 from routes.v1.auth import auth
+from routes.v1.captcha import captcha
 from routes.v1.oauth import oauth
 from routes.v1.roles import roles
 from routes.v1.users import users
 from schemas.core import ErrorSchema
 from schemas.users import UserCreate
+from utils.auth import get_ip_address_from_request
 from utils.db import db_session_manager
 
 old_default = JSONEncoder.default
@@ -49,6 +52,7 @@ app.register_blueprint(users)
 app.register_blueprint(auth)
 app.register_blueprint(roles)
 app.register_blueprint(oauth)
+app.register_blueprint(captcha)
 
 
 @app.errorhandler(LogicException)
@@ -78,6 +82,13 @@ def handle_error(e):
 
 @app.before_request
 def before_request():
+    ip_addr = get_ip_address_from_request(request)
+    if redis_cache.get(ip_addr):
+        endpoint = 'captcha.generate_captcha'
+        if request.endpoint != endpoint:
+            return redirect(url_for(endpoint, _method='GET'))
+        return None
+
     request_id = request.headers.get(REQUEST_HEADER_ID)
     if not request_id and not envs.app.debug:
         raise RuntimeError(ExceptionMessages.request_id_necessary())
